@@ -1,52 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  CircularProgress,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-  TablePagination,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Tooltip,
-} from '@mui/material';
-import {
-  Refresh,
-  CheckCircle,
-  Cancel,
-  Visibility,
-  SmartToy,
-  Search,
-  Event,
-  CalendarToday,
-} from '@mui/icons-material';
+
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Dialog, DialogContent, DialogActions } from '../components/ui/Dialog';
+import { Table, TableHead, TableBody, TableRow, TableCell, TableSortLabel, TablePagination } from '../components/ui/Table';
 
 import useWorkOrders from '../hooks/useWorkOrders';
 import workOrderService from '../services/workOrderService';
 import machineService from '../services/machineService';
 import { formatDateTime, formatDate } from '../utils/dateUtils';
 import {
-  getWorkOrderStatusColor,
   getWorkOrderStatusLabel,
-  getPriorityColor,
+  getWorkOrderStatusVariant,
+  getPriorityVariant,
 } from '../utils/statusUtils';
 
 const WorkOrderView = () => {
@@ -321,192 +291,186 @@ const WorkOrderView = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" action={
-        <Button color="inherit" size="small" onClick={refetch}>
-          Retry
-        </Button>
-      }>
-        {error}
-      </Alert>
+      <div className="bg-error-light border border-error rounded-lg p-4 flex items-start justify-between">
+        <div className="flex items-start gap-3">
+          <span className="material-icons-round text-error">error</span>
+          <span className="text-error font-medium">{error}</span>
+        </div>
+        <Button variant="text" size="sm" onClick={refetch}>Retry</Button>
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div>
       {/* Page Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">
-          Work Orders
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<Refresh />}
-          onClick={refetch}
-        >
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">Work Orders</h1>
+        <Button variant="outlined" startIcon="refresh" onClick={refetch}>
           Refresh
         </Button>
-      </Box>
+      </div>
 
       {/* Filter and Search Controls */}
-      <Box mb={3} display="flex" gap={2} flexWrap="wrap">
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Filter by Status</InputLabel>
-          <Select
-            value={statusFilter}
-            label="Filter by Status"
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="all">All Work Orders</MenuItem>
-            <MenuItem value="Draft">Draft</MenuItem>
-            <MenuItem value="Pending_Approval">Pending Approval</MenuItem>
-            <MenuItem value="Approved">Approved</MenuItem>
-            <MenuItem value="Completed">Completed</MenuItem>
-            <MenuItem value="Cancelled">Cancelled</MenuItem>
-          </Select>
-        </FormControl>
+      <div className="flex flex-wrap gap-4 mb-6">
+        <Select
+          label="Filter by Status"
+          value={statusFilter}
+          onChange={handleFilterChange}
+          options={[
+            { value: 'all', label: 'All Work Orders' },
+            { value: 'Draft', label: 'Draft' },
+            { value: 'Pending_Approval', label: 'Pending Approval' },
+            { value: 'Approved', label: 'Approved' },
+            { value: 'Completed', label: 'Completed' },
+            { value: 'Cancelled', label: 'Cancelled' },
+          ]}
+          className="min-w-[200px]"
+        />
 
-        <TextField
+        <Input
           label="Search"
           placeholder="Search by WO number, machine name, status, priority..."
           value={searchTerm}
           onChange={handleSearchChange}
-          sx={{ minWidth: 350 }}
-          InputProps={{
-            startAdornment: <Search sx={{ mr: 1, color: 'action.active' }} />,
-          }}
+          startIcon="search"
+          className="min-w-[350px]"
         />
-      </Box>
+      </div>
 
       {/* Work Orders Table */}
       {filteredAndSortedWorkOrders.length === 0 ? (
-        <Alert severity="info">
-          No work orders found matching the selected filter{searchTerm && ' and search criteria'}.
-        </Alert>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+          <span className="material-icons-round text-blue-600">info</span>
+          <span className="text-blue-800">
+            No work orders found matching the selected filter{searchTerm && ' and search criteria'}.
+          </span>
+        </div>
       ) : (
-        <TableContainer component={Paper} elevation={3}>
+        <Card>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'wo_number'}
-                    direction={orderBy === 'wo_number' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('wo_number')}
                   >
                     WO Number
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'machine_name'}
-                    direction={orderBy === 'machine_name' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('machine_name')}
                   >
                     Machine
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'status'}
-                    direction={orderBy === 'status' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('status')}
                   >
                     Status
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'priority'}
-                    direction={orderBy === 'priority' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('priority')}
                   >
                     Priority
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'creation_source'}
-                    direction={orderBy === 'creation_source' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('creation_source')}
                   >
                     Source
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'created_at'}
-                    direction={orderBy === 'created_at' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('created_at')}
                   >
                     Created
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'scheduled_date'}
-                    direction={orderBy === 'scheduled_date' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('scheduled_date')}
                   >
                     Scheduled
                   </TableSortLabel>
                 </TableCell>
-                <TableCell align="center">Actions</TableCell>
+                <TableCell header align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedWorkOrders.map((wo) => (
                 <TableRow key={wo.id} hover>
                   <TableCell>
-                    <Typography variant="body2" fontWeight="bold">
+                    <span className="font-bold text-gray-800">
                       {wo.wo_number}
-                    </Typography>
+                    </span>
                   </TableCell>
 
                   <TableCell>
-                    <Button
-                      size="small"
+                    <button
                       onClick={() => navigate(`/machines/${wo.machine_id}`)}
+                      className="text-primary hover:underline font-medium"
                     >
                       {wo.machine_name || `Machine #${wo.machine_id}`}
-                    </Button>
+                    </button>
                   </TableCell>
 
                   <TableCell>
-                    <Chip
-                      label={getWorkOrderStatusLabel(wo.status)}
-                      color={getWorkOrderStatusColor(wo.status)}
-                      size="small"
-                    />
+                    <Badge variant={getWorkOrderStatusVariant(wo.status)} size="sm">
+                      {getWorkOrderStatusLabel(wo.status)}
+                    </Badge>
                   </TableCell>
 
                   <TableCell>
                     {wo.priority ? (
-                      <Chip
-                        label={wo.priority}
-                        color={getPriorityColor(wo.priority)}
-                        size="small"
-                      />
+                      <Badge variant={getPriorityVariant(wo.priority)} size="sm">
+                        {wo.priority}
+                      </Badge>
                     ) : (
                       'N/A'
                     )}
                   </TableCell>
 
                   <TableCell>
-                    <Chip
-                      icon={wo.creation_source === 'AI' ? <SmartToy /> : undefined}
-                      label={wo.creation_source}
-                      size="small"
-                      variant={wo.creation_source === 'AI' ? 'filled' : 'outlined'}
-                      color={wo.creation_source === 'AI' ? 'secondary' : 'default'}
-                    />
+                    <div className="flex items-center gap-1">
+                      {wo.creation_source === 'AI' && (
+                        <span className="material-icons-round text-sm text-primary">smart_toy</span>
+                      )}
+                      <Badge
+                        variant={wo.creation_source === 'AI' ? 'primary' : 'default'}
+                        size="sm"
+                      >
+                        {wo.creation_source}
+                      </Badge>
+                    </div>
                   </TableCell>
 
                   <TableCell>{formatDateTime(wo.created_at)}</TableCell>
@@ -516,152 +480,140 @@ const WorkOrderView = () => {
                   </TableCell>
 
                   <TableCell align="center">
-                    <Box display="flex" gap={1} justifyContent="center">
+                    <div className="flex gap-1 justify-center">
                       {/* Approve Button */}
                       {(wo.status === 'Draft' || wo.status === 'Pending_Approval') && (
-                        <Tooltip title="Approve">
-                          <IconButton
-                            color="success"
-                            size="small"
-                            onClick={() => handleOpenApproval(wo)}
-                          >
-                            <CheckCircle />
-                          </IconButton>
-                        </Tooltip>
+                        <button
+                          onClick={() => handleOpenApproval(wo)}
+                          className="p-2 rounded-full text-success hover:bg-success-light transition-colors"
+                          title="Approve"
+                        >
+                          <span className="material-icons-round text-xl">check_circle</span>
+                        </button>
                       )}
 
                       {/* Complete Button */}
                       {wo.status === 'Approved' && (
-                        <Tooltip title="Complete">
-                          <IconButton
-                            color="primary"
-                            size="small"
-                            onClick={() => handleComplete(wo.id, wo.wo_number)}
-                          >
-                            <CheckCircle />
-                          </IconButton>
-                        </Tooltip>
+                        <button
+                          onClick={() => handleComplete(wo.id, wo.wo_number)}
+                          className="p-2 rounded-full text-primary hover:bg-primary-50 transition-colors"
+                          title="Complete"
+                        >
+                          <span className="material-icons-round text-xl">check_circle</span>
+                        </button>
                       )}
 
                       {/* Update Schedule Button - Only for Approved status */}
                       {wo.status === 'Approved' && (
-                        <Tooltip title="Update Schedule">
-                          <IconButton
-                            color="warning"
-                            size="small"
-                            onClick={() => handleOpenScheduleDialog(wo)}
-                          >
-                            <CalendarToday />
-                          </IconButton>
-                        </Tooltip>
+                        <button
+                          onClick={() => handleOpenScheduleDialog(wo)}
+                          className="p-2 rounded-full text-warning hover:bg-warning-light transition-colors"
+                          title="Update Schedule"
+                        >
+                          <span className="material-icons-round text-xl">calendar_today</span>
+                        </button>
                       )}
 
                       {/* Cancel Button */}
                       {wo.status !== 'Completed' && wo.status !== 'Cancelled' && (
-                        <Tooltip title="Cancel">
-                          <IconButton
-                            color="error"
-                            size="small"
-                            onClick={() => handleCancel(wo.id, wo.wo_number)}
-                          >
-                            <Cancel />
-                          </IconButton>
-                        </Tooltip>
+                        <button
+                          onClick={() => handleCancel(wo.id, wo.wo_number)}
+                          className="p-2 rounded-full text-error hover:bg-error-light transition-colors"
+                          title="Cancel"
+                        >
+                          <span className="material-icons-round text-xl">cancel</span>
+                        </button>
                       )}
 
                       {/* View Details Button */}
-                      <Tooltip title="View Machine">
-                        <IconButton
-                          color="info"
-                          size="small"
-                          onClick={() => navigate(`/machines/${wo.machine_id}`)}
-                        >
-                          <Visibility />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
+                      <button
+                        onClick={() => navigate(`/machines/${wo.machine_id}`)}
+                        className="p-2 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
+                        title="View Machine"
+                      >
+                        <span className="material-icons-round text-xl">visibility</span>
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            component="div"
             count={filteredAndSortedWorkOrders.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25, 50]}
           />
-        </TableContainer>
+        </Card>
       )}
 
       {/* Approval Dialog */}
       <Dialog
         open={approvalDialogOpen}
         onClose={() => !approving && setApprovalDialogOpen(false)}
+        title="Approve Work Order"
         maxWidth="sm"
-        fullWidth
       >
-        <DialogTitle>Approve Work Order</DialogTitle>
         <DialogContent>
           {selectedWO && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Work Order Number
-              </Typography>
-              <Typography variant="h6" gutterBottom>
-                {selectedWO.wo_number}
-              </Typography>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Work Order Number</p>
+                <h3 className="text-xl font-semibold text-gray-800">{selectedWO.wo_number}</h3>
+              </div>
 
-              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                Current Status
-              </Typography>
-              <Chip
-                label={getWorkOrderStatusLabel(selectedWO.status)}
-                color={getWorkOrderStatusColor(selectedWO.status)}
-                sx={{ mb: 2 }}
-              />
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Current Status</p>
+                <Badge variant={getWorkOrderStatusVariant(selectedWO.status)}>
+                  {getWorkOrderStatusLabel(selectedWO.status)}
+                </Badge>
+              </div>
 
               {selectedWO.notes && (
-                <>
-                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                    Notes
-                  </Typography>
-                  <Paper variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: 'grey.50' }}>
-                    <Typography variant="body2">
-                      {selectedWO.notes}
-                    </Typography>
-                  </Paper>
-                </>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Notes</p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <p className="text-sm text-gray-700">{selectedWO.notes}</p>
+                  </div>
+                </div>
               )}
 
-              <TextField
+              <Input
                 label="Approver Name"
-                fullWidth
                 value={approverName}
                 onChange={(e) => setApproverName(e.target.value)}
                 placeholder="Enter your name"
                 required
                 disabled={approving}
-                sx={{ mt: 2 }}
               />
-            </Box>
+            </div>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setApprovalDialogOpen(false)} disabled={approving}>
+          <Button
+            variant="outlined"
+            onClick={() => setApprovalDialogOpen(false)}
+            disabled={approving}
+          >
             Cancel
           </Button>
           <Button
+            variant="success"
             onClick={handleApprove}
-            variant="contained"
-            color="success"
             disabled={approving}
-            startIcon={approving ? <CircularProgress size={20} /> : <CheckCircle />}
+            startIcon={approving ? null : "check_circle"}
           >
-            {approving ? 'Approving...' : 'Approve'}
+            {approving ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Approving...
+              </div>
+            ) : (
+              'Approve'
+            )}
           </Button>
         </DialogActions>
       </Dialog>
@@ -670,108 +622,104 @@ const WorkOrderView = () => {
       <Dialog
         open={scheduleDialogOpen}
         onClose={handleCloseScheduleDialog}
+        title="Update Scheduled Date"
         maxWidth="sm"
-        fullWidth
       >
-        <DialogTitle>Update Scheduled Date</DialogTitle>
         <DialogContent>
           {selectedWOForSchedule && (
-            <Box>
+            <div className="space-y-4">
               {/* Work Order Info */}
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Work Order Number
-              </Typography>
-              <Typography variant="h6" gutterBottom>
-                {selectedWOForSchedule.wo_number}
-              </Typography>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Work Order Number</p>
+                <h3 className="text-xl font-semibold text-gray-800">{selectedWOForSchedule.wo_number}</h3>
+              </div>
 
               {/* Machine Info */}
-              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                Machine
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                Machine #{selectedWOForSchedule.machine_id}
-                {machineData && ` - ${machineData.name}`}
-              </Typography>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Machine</p>
+                <p className="text-base font-medium text-gray-800">
+                  Machine #{selectedWOForSchedule.machine_id}
+                  {machineData && ` - ${machineData.name}`}
+                </p>
+              </div>
 
               {/* Current Status */}
-              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                Status
-              </Typography>
-              <Chip
-                label={getWorkOrderStatusLabel(selectedWOForSchedule.status)}
-                color={getWorkOrderStatusColor(selectedWOForSchedule.status)}
-                sx={{ mb: 2 }}
-              />
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Status</p>
+                <Badge variant={getWorkOrderStatusVariant(selectedWOForSchedule.status)}>
+                  {getWorkOrderStatusLabel(selectedWOForSchedule.status)}
+                </Badge>
+              </div>
 
               {/* Current Scheduled Date */}
               {selectedWOForSchedule.scheduled_date && (
-                <>
-                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                    Current Scheduled Date
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Current Scheduled Date</p>
+                  <p className="text-base font-medium text-gray-800">
                     {formatDate(selectedWOForSchedule.scheduled_date)}
-                  </Typography>
-                </>
+                  </p>
+                </div>
               )}
 
               {/* Machine Next PM Date Info */}
               {machineData && machineData.next_pm_date && (
-                <Paper variant="outlined" sx={{ p: 2, mt: 2, mb: 2, backgroundColor: 'grey.50' }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Machine Next PM Date: <strong>{formatDate(machineData.next_pm_date)}</strong>
-                  </Typography>
-                </Paper>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <p className="text-sm text-gray-600">
+                    Machine Next PM Date: <strong className="text-gray-800">{formatDate(machineData.next_pm_date)}</strong>
+                  </p>
+                </div>
               )}
 
               {/* Date Picker */}
-              <TextField
+              <Input
                 label="New Scheduled Date"
                 type="date"
-                fullWidth
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
                 disabled={loadingMachine || updatingSchedule}
                 required
-                sx={{ mt: 2 }}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                inputProps={{
-                  min: new Date().toISOString().split('T')[0], // Prevent selecting past dates
-                }}
                 helperText="Select today or a future date"
+                inputProps={{
+                  min: new Date().toISOString().split('T')[0],
+                }}
               />
 
               {/* Loading state */}
               {loadingMachine && (
-                <Box display="flex" alignItems="center" gap={1} mt={2}>
-                  <CircularProgress size={20} />
-                  <Typography variant="body2" color="text.secondary">
-                    Loading machine data...
-                  </Typography>
-                </Box>
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
+                  <p className="text-sm text-gray-600">Loading machine data...</p>
+                </div>
               )}
-            </Box>
+            </div>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseScheduleDialog} disabled={updatingSchedule}>
+          <Button
+            variant="outlined"
+            onClick={handleCloseScheduleDialog}
+            disabled={updatingSchedule}
+          >
             Cancel
           </Button>
           <Button
+            variant="primary"
             onClick={handleUpdateSchedule}
-            variant="contained"
-            color="primary"
             disabled={loadingMachine || updatingSchedule || !scheduledDate}
-            startIcon={updatingSchedule ? <CircularProgress size={20} /> : <CalendarToday />}
+            startIcon={updatingSchedule ? null : "calendar_today"}
           >
-            {updatingSchedule ? 'Updating...' : 'Update Schedule'}
+            {updatingSchedule ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Updating...
+              </div>
+            ) : (
+              'Update Schedule'
+            )}
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 };
 
