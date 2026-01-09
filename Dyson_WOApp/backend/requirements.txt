@@ -1,0 +1,35 @@
+# FastAPI and Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+
+# Database
+sqlalchemy>=2.0.25
+pyodbc>=5.0.1
+
+# Pydantic for validation (compatible with Python 3.12+)
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
+
+# LLM Providers
+openai>=1.10.0
+anthropic>=0.18.1
+google-genai>=1.0.0
+
+# Environment and Configuration
+python-dotenv>=1.0.0
+
+# HTTP Client
+httpx>=0.26.0
+
+# Email (for notifications)
+aiosmtplib>=3.0.1
+email-validator>=2.1.0
+
+# Testing
+pytest>=7.4.4
+pytest-asyncio>=0.23.3
+pytest-cov>=4.1.0
+
+# Logging
+python-json-logger>=2.0.7

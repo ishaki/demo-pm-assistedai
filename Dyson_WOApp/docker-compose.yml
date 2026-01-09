@@ -1,0 +1,81 @@
+services:
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dyson_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - CONFIDENCE_THRESHOLD=${CONFIDENCE_THRESHOLD:-0.7}
+      - PM_DUE_DAYS=${PM_DUE_DAYS:-30}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - SMTP_USE_TLS=${SMTP_USE_TLS:-True}
+      - DEBUG=${DEBUG:-True}
+    volumes:
+      - ./backend:/app
+    networks:
+      - agenticai-demo-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # React Frontend
+  frontend:
+    image: node:18-alpine
+    container_name: dyson_frontend
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api/v1
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - agenticai-demo-network
+    stdin_open: true
+    tty: true
+    command: sh -c "npm install && npm start"
+
+  # n8n Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: dyson_n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=America/New_York
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ../Dyson_Workflow/workflows:/home/node/.n8n/workflows
+    networks:
+      - agenticai-demo-network
+    depends_on:
+      - backend
+
+volumes:
+  n8n_data:
+    driver: local
+
+networks:
+  agenticai-demo-network:
+    driver: bridge

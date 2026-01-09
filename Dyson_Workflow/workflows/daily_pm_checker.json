@@ -1,0 +1,527 @@
+{
+  "name": "daily-pm-checker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 * * *"
+            }
+          ]
+        }
+      },
+      "id": "3053e807-d60f-423a-ada9-23945d679338",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/machines/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pm_status",
+              "value": "due_soon,overdue"
+            },
+            {
+              "name": "limit",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb3b41d5-2ca1-4fa7-8646-5b300b163729",
+      "name": "Get Machines Due for PM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -256,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "fda8fd0a-837c-4f40-a487-1654ff53c268",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -32,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://backend:8000/api/v1/ai/decision/{{ $json.id }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "78ead4ce-f9cc-4681-ac98-3f55e9726b3f",
+      "name": "Get AI Decision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        208,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "=WAIT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a358d36e-eaee-4186-87c9-14bac7aa3f7b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "1e74a208-319b-4202-9e50-d9caec774ec0",
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "CREATE_WORK_ORDER",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "c37bc72e-9256-49dd-a7a8-89661c179a57",
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "SEND_NOTIFICATION",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4b284a78-10d1-4d73-a832-40b44840e025",
+      "name": "Decision Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        656,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "5f474f7f-9ee8-465a-b386-a69a76a2b1c7",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 0.9,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ccda1a77-cec0-4908-8ff1-77a490fc7d9a",
+      "name": "Check Confidence >= 0.7",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        432,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/v1/work-orders",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "machine_id",
+              "value": "={{ $('Get AI Decision').item.json.machine_id }}"
+            },
+            {
+              "name": "creation_source",
+              "value": "AI"
+            },
+            {
+              "name": "ai_decision_id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "priority",
+              "value": "={{ $json.priority.trim() }}"
+            },
+            {
+              "name": "status",
+              "value": "Pending_Approval"
+            },
+            {
+              "name": "notes",
+              "value": "=AI-generated work order. {{ $json.explanation }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "782987b9-9d0f-47ec-bcd2-da5235659073",
+      "name": "Create Work Order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1088,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://backend:8000/api/v1/machines/{{ $('Get AI Decision').item.json.machine_id }}",
+        "options": {}
+      },
+      "id": "3ce198af-b1d2-4772-ab6a-c35018d61227",
+      "name": "Get Machine Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        864,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@agenticai-pm.com",
+        "toEmail": "={{ $json.supplier_email }}",
+        "subject": "=PM Work Order - {{ $json.machine_id }}",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; }\n  .wrapper { width: 100%; table-layout: fixed; background-color: #f0f2f5; padding-bottom: 40px; }\n  .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 600px; border-spacing: 0; font-family: sans-serif; color: #4a4a4a; border-top: 5px solid #007bff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }\n  .content-padding { padding: 30px; }\n  h2 { color: #333; margin-top: 0; }\n  .machine-card { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 20px; margin: 20px 0; }\n  .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #e9ecef; padding-bottom: 8px; }\n  .stat-label { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }\n  .stat-value { font-weight: 600; color: #333; }\n  .ai-section { background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; border: 1px solid #ffeeba; margin-bottom: 20px; }\n  .btn { display: inline-block; padding: 12px 24px; background-color: #007bff; color: #ffffff !important; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px; }\n</style>\n</head>\n<body>\n\n<center class=\"wrapper\">\n  <table class=\"main\" width=\"100%\">\n    <tr>\n      <td class=\"content-padding\">\n        <h2>Maintenance Request</h2>\n        <p>Hello {{ $json.assigned_supplier }},</p>\n        <p>Our system has flagged the following machine for preventive maintenance based on usage and schedule.</p>\n\n        <div class=\"machine-card\">\n          <table width=\"100%\" cellpadding=\"5\">\n            <tr>\n              <td style=\"color:#777; font-size:12px;\">MACHINE</td>\n              <td align=\"right\"><strong>{{ $json.name }}</strong> ({{ $json.machine_id }})</td>\n            </tr>\n            <tr>\n              <td style=\"color:#777; font-size:12px;\">LOCATION</td>\n              <td align=\"right\">{{ $json.location }}</td>\n            </tr>\n            <tr>\n              <td style=\"color:#777; font-size:12px;\">DUE DATE</td>\n              <td align=\"right\">{{ $json.next_pm_date }}</td>\n            </tr>\n            <tr>\n              <td style=\"color:#777; font-size:12px;\">COUNTDOWN</td>\n              <td align=\"right\" style=\"color: #dc3545; font-weight:bold;\">{{ $json.days_until_pm }} days left</td>\n            </tr>\n          </table>\n        </div>\n\n        <div class=\"ai-section\">\n          <strong>Why is this triggering?</strong><br>\n          <em>\"{{ $('Get AI Decision').item.json.explanation }}\"</em>\n        </div>\n\n        <div style=\"text-align: center;\">\n          <a href=\"mailto:maintenance@yourcompany.com?subject=Schedule%20PM%20for%20{{ $json.machine_id }}\" class=\"btn\">Confirm Schedule</a>\n        </div>\n        \n        <p style=\"font-size: 12px; margin-top: 30px; text-align: center; color: #999;\">\n          Ref: PM-{{ $json.machine_id }}-{{ $json.pm_frequency }}\n        </p>\n      </td>\n    </tr>\n  </table>\n</center>\n\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "7051a858-17a3-468c-b9e8-ad452548c9ed",
+      "name": "Send Email Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1088,
+        496
+      ],
+      "webhookId": "30358481-4cce-4e93-96f9-d98fea39c3f2",
+      "credentials": {
+        "smtp": {
+          "id": "7TnmLOLpXmFuxoOs",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/v1/workflow-logs",
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "workflow_name",
+              "value": "daily-pm-checker"
+            },
+            {
+              "name": "execution_id",
+              "value": "={{ $execution.id }}"
+            },
+            {
+              "name": "status",
+              "value": "Success"
+            },
+            {
+              "name": "machines_processed",
+              "value": "={{ $('Get Machines Due for PM').item.json.length || 0 }}"
+            },
+            {
+              "name": "work_orders_created",
+              "value": "={{ $('Create Work Order') ? 1 : 0 }}"
+            },
+            {
+              "name": "notifications_sent",
+              "value": "={{ $('Send Email Notification') ? 1 : 0 }}"
+            },
+            {
+              "name": "errors",
+              "value": ""
+            },
+            {
+              "name": "execution_time_ms",
+              "value": 0
+            },
+            {
+              "name": "started_at",
+              "value": "={{ $now }}"
+            },
+            {
+              "name": "completed_at",
+              "value": "={{ $now }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3bf5e549-3e53-4d57-acf1-062457d78f11",
+      "name": "Log Workflow Results",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1536,
+        464
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "id": "01e081ef-0ebb-4f38-b018-1bec608b9342",
+      "name": "Merge Paths",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1312,
+        464
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "c882a9df-fe4d-4241-8f4f-13fcf088646c",
+      "name": "No Action (Wait)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        864,
+        160
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Machines Due for PM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Machines Due for PM": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get AI Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get AI Decision": {
+      "main": [
+        [
+          {
+            "node": "Check Confidence >= 0.7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision Router": {
+      "main": [
+        [
+          {
+            "node": "No Action (Wait)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Work Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Machine Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Confidence >= 0.7": {
+      "main": [
+        [
+          {
+            "node": "Decision Router",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Create Work Order": {
+      "main": [
+        [
+          {
+            "node": "Merge Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Machine Details": {
+      "main": [
+        [
+          {
+            "node": "Send Email Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Notification": {
+      "main": [
+        [
+          {
+            "node": "Merge Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Paths": {
+      "main": [
+        [
+          {
+            "node": "Log Workflow Results",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Workflow Results": {
+      "main": [
+        []
+      ]
+    },
+    "No Action (Wait)": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "8ca202f8-ffc5-4368-a819-87504ff93e5e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "75d6830743c4ec8a3c896ce8c64607dffdfdf5cd9b5041c65e99ead45dbfae15"
+  },
+  "id": "0pDSl9jxDULmYQLO3Xg3y",
+  "tags": []
+}
