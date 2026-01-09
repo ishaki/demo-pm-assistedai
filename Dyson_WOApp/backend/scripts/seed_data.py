@@ -248,7 +248,19 @@ def seed_database():
             db.query(MaintenanceHistory).delete()
             db.query(Machine).delete()
             db.commit()
-            logger.info("✓ Existing data cleared")
+
+            # Reset auto-increment IDs
+            logger.info("Resetting ID sequences...")
+            try:
+                # Reset the auto-increment counter for both tables
+                db.execute("DELETE FROM sqlite_sequence WHERE name='machines'")
+                db.execute("DELETE FROM sqlite_sequence WHERE name='maintenance_history'")
+                db.commit()
+                logger.info("✓ ID sequences reset")
+            except Exception as e:
+                logger.warning(f"Could not reset ID sequences (non-SQLite database?): {e}")
+
+            logger.info("✓ Existing data cleared and IDs reset")
 
         # Generate machines (already refreshed with IDs)
         machines = generate_machines(db, count=75)
