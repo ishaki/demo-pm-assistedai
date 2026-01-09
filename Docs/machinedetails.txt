@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Advanced Machine Detail View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0284c7", // Sky 600 - Good distinct blue for actions
+                        secondary: "#10b981", // Emerald 500 - For OK/Success states
+                        danger: "#ef4444", // Red 500 - For Overdue/Danger
+                        "background-light": "#f3f4f6", // Gray 100
+                        "background-dark": "#0f172a", // Slate 900
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e293b", // Slate 800
+                        "text-primary-light": "#111827", // Gray 900
+                        "text-primary-dark": "#f8fafc", // Slate 50
+                        "text-secondary-light": "#6b7280", // Gray 500
+                        "text-secondary-dark": "#94a3b8", // Slate 400
+                        "border-light": "#e5e7eb", // Gray 200
+                        "border-dark": "#334155", // Slate 700
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-body antialiased transition-colors duration-200">
+<header class="bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark sticky top-0 z-10">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div>
+<a class="inline-flex items-center text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors mb-2" href="#">
+<span class="material-icons text-base mr-1">arrow_back</span>
+                        BACK TO LIST
+                    </a>
+<div class="flex items-center gap-4">
+<h1 class="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark tracking-tight">MACH-001</h1>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border border-green-200 dark:border-green-700">
+                            OK
+                        </span>
+</div>
+</div>
+<div>
+<button class="bg-primary hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+<span class="material-icons text-sm mr-2">smart_toy</span>
+                        GET AI DECISION
+                    </button>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6">
+<div class="flex items-center border-b border-border-light dark:border-border-dark pb-4 mb-6">
+<span class="material-icons text-text-secondary-light dark:text-text-secondary-dark mr-2">build</span>
+<h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">Machine Information</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Machine ID</label>
+<p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">MACH-001</p>
+</div>
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Name</label>
+<p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">Assembly Line 1</p>
+</div>
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Location</label>
+<p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">Zone A</p>
+</div>
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Status</label>
+<span class="inline-flex items-center text-sm font-medium text-green-600 dark:text-green-400">
+<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            Active
+                        </span>
+</div>
+<div class="md:col-span-2">
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Description</label>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Production machine in Zone C utilized for primary assembly tasks.</p>
+</div>
+</div>
+</section>
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6">
+<div class="flex items-center justify-between border-b border-border-light dark:border-border-dark pb-4 mb-6">
+<div class="flex items-center">
+<span class="material-icons text-text-secondary-light dark:text-text-secondary-dark mr-2">schedule</span>
+<h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">PM Schedule</h2>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">PM Frequency</label>
+<p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">Bimonthly</p>
+</div>
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">PM Status</label>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            OK
+                        </span>
+</div>
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Last PM Date</label>
+<p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">Jan 09, 2026</p>
+</div>
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Next PM Date</label>
+<p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">Mar 16, 2026</p>
+</div>
+<div class="md:col-span-2 mt-2">
+<div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800 flex items-center justify-between">
+<div>
+<label class="block text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">Days Until PM</label>
+<p class="text-3xl font-bold text-primary">66 days</p>
+</div>
+<span class="material-icons text-primary opacity-20 text-5xl">hourglass_empty</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6 flex flex-col h-full">
+<div class="flex items-center border-b border-border-light dark:border-border-dark pb-4 mb-6">
+<span class="material-icons text-text-secondary-light dark:text-text-secondary-dark mr-2">business</span>
+<h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">Supplier Information</h2>
+</div>
+<div class="grid grid-cols-1 gap-y-6">
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Assigned Supplier</label>
+<div class="flex items-center">
+<div class="w-8 h-8 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-500 dark:text-gray-400 mr-3">SM</div>
+<p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">ServiceMax</p>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Supplier Email</label>
+<a class="text-base font-medium text-primary hover:underline" href="mailto:ishak.ahmad@innoark.com">ishak.ahmad@innoark.com</a>
+</div>
+<div>
+<label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-1">Contract Status</label>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                            Valid until 2028
+                        </span>
+</div>
+</div>
+</section>
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6 flex flex-col h-full">
+<div class="flex items-center justify-between border-b border-border-light dark:border-border-dark pb-4 mb-6">
+<div class="flex items-center">
+<span class="material-icons text-text-secondary-light dark:text-text-secondary-dark mr-2">assignment</span>
+<h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">Active Work Orders (1)</h2>
+</div>
+</div>
+<div class="flex-grow">
+<div class="border border-border-light dark:border-border-dark rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-sm font-bold text-text-primary-light dark:text-text-primary-dark group-hover:text-primary transition-colors">WO-2026-0001</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                Completed
+                            </span>
+</div>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">Created: Jan 09, 2026 03:29</p>
+<div class="flex items-center">
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mr-2">Priority:</span>
+<span class="text-xs font-bold text-red-600 dark:text-red-400">High</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-border-light dark:border-border-dark">
+<button class="w-full py-2 px-4 border border-primary text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary uppercase tracking-wide">
+                        View All Work Orders
+                    </button>
+</div>
+</section>
+</div>
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
+<div class="px-6 py-5 border-b border-border-light dark:border-border-dark flex items-center">
+<span class="material-icons text-text-secondary-light dark:text-text-secondary-dark mr-2">history</span>
+<h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">Maintenance History</h2>
+</div>
+<div class="overflow-x-auto">
+<table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+<thead class="bg-gray-50 dark:bg-slate-800/50">
+<tr>
+<th class="px-6 py-3 text-left text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider" scope="col">Date</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider" scope="col">Type</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider" scope="col">Performed By</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider" scope="col">Notes</th>
+</tr>
+</thead>
+<tbody class="bg-surface-light dark:bg-surface-dark divide-y divide-border-light dark:divide-border-dark">
+<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-sm text-text-primary-light dark:text-text-primary-dark font-medium">Jan 09, 2026</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    Preventive
+                                </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-text-primary-light dark:text-text-primary-dark">ServiceMax</td>
+<td class="px-6 py-4 text-sm text-text-secondary-light dark:text-text-secondary-dark max-w-md">
+                                Completed work order WO-2026-0001. AI-generated work order. PM is overdue by 48 days and no active work orders exist.
+                            </td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-sm text-text-primary-light dark:text-text-primary-dark font-medium">Aug 28, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    Preventive
+                                </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-text-primary-light dark:text-text-primary-dark">MainCo Solutions</td>
+<td class="px-6 py-4 text-sm text-text-secondary-light dark:text-text-secondary-dark max-w-md">
+                                Routine inspection completed. No issues found.
+                            </td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-sm text-text-primary-light dark:text-text-primary-dark font-medium">Aug 26, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                                    Corrective
+                                </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-text-primary-light dark:text-text-primary-dark">FixIt Pro</td>
+<td class="px-6 py-4 text-sm text-text-secondary-light dark:text-text-secondary-dark max-w-md">
+                                Preventive maintenance completed successfully. Replaced filter #42.
+                            </td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 border-t border-border-light dark:border-border-dark bg-gray-50 dark:bg-slate-800/30 flex justify-end">
+<a class="text-sm font-medium text-primary hover:text-sky-700 flex items-center" href="#">
+                    View Full History <span class="material-icons text-base ml-1">arrow_forward</span>
+</a>
+</div>
+</section>
+</main>
+<div class="h-12"></div>
+
+</body></html>

@@ -1,35 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Grid,
-  Typography,
-  Chip,
-  Button,
-  Box,
-  CircularProgress,
-  Alert,
-  Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-  TablePagination,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
-import { Visibility, Refresh, Search } from '@mui/icons-material';
+
+import { Card, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Table, TableHead, TableBody, TableRow, TableCell, TableSortLabel, TablePagination } from '../components/ui/Table';
 
 import useMachines from '../hooks/useMachines';
 import { formatDate, formatDaysUntilPM } from '../utils/dateUtils';
-import { getPMStatusColor, getPMStatusLabel } from '../utils/statusUtils';
+import { getPMStatusLabel, getPMStatusVariant } from '../utils/statusUtils';
 
 const MachineDashboard = () => {
   const navigate = useNavigate();
@@ -124,203 +105,160 @@ const MachineDashboard = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" action={
-        <Button color="inherit" size="small" onClick={refetch}>
-          Retry
-        </Button>
-      }>
-        {error}
-      </Alert>
+      <div className="bg-error-light border border-error rounded-lg p-4 flex items-start justify-between">
+        <div className="flex items-start gap-3">
+          <span className="material-icons-round text-error">error</span>
+          <span className="text-error font-medium">{error}</span>
+        </div>
+        <Button variant="text" size="sm" onClick={refetch}>Retry</Button>
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div>
       {/* Page Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">
-          Machine Dashboard
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<Refresh />}
-          onClick={refetch}
-        >
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">Machine Dashboard</h1>
+        <Button variant="outlined" startIcon="refresh" onClick={refetch}>
           Refresh
         </Button>
-      </Box>
+      </div>
 
       {/* Summary Cards */}
-      <Grid container spacing={2} mb={4}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper
-            elevation={2}
-            sx={{
-              p: 2,
-              backgroundColor: 'error.light',
-              color: 'error.contrastText',
-            }}
-          >
-            <Typography variant="h3" align="center">
-              {summary.overdue}
-            </Typography>
-            <Typography variant="subtitle1" align="center">
-              Overdue
-            </Typography>
-          </Paper>
-        </Grid>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card className="bg-error-light border-error">
+          <CardContent className="text-center">
+            <div className="text-4xl font-bold text-error">{summary.overdue}</div>
+            <div className="text-sm text-gray-700 mt-1 font-medium">Overdue</div>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper
-            elevation={2}
-            sx={{
-              p: 2,
-              backgroundColor: 'warning.light',
-              color: 'warning.contrastText',
-            }}
-          >
-            <Typography variant="h3" align="center">
-              {summary.due_soon}
-            </Typography>
-            <Typography variant="subtitle1" align="center">
-              Due Soon (≤30 days)
-            </Typography>
-          </Paper>
-        </Grid>
+        <Card className="bg-warning-light border-warning">
+          <CardContent className="text-center">
+            <div className="text-4xl font-bold text-warning">{summary.due_soon}</div>
+            <div className="text-sm text-gray-700 mt-1 font-medium">Due Soon (≤30 days)</div>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper
-            elevation={2}
-            sx={{
-              p: 2,
-              backgroundColor: 'success.light',
-              color: 'success.contrastText',
-            }}
-          >
-            <Typography variant="h3" align="center">
-              {summary.ok}
-            </Typography>
-            <Typography variant="subtitle1" align="center">
-              OK
-            </Typography>
-          </Paper>
-        </Grid>
+        <Card className="bg-success-light border-success">
+          <CardContent className="text-center">
+            <div className="text-4xl font-bold text-success">{summary.ok}</div>
+            <div className="text-sm text-gray-700 mt-1 font-medium">OK</div>
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={2} sx={{ p: 2 }}>
-            <Typography variant="h3" align="center" color="primary">
-              {summary.total}
-            </Typography>
-            <Typography variant="subtitle1" align="center">
-              Total Machines
-            </Typography>
-          </Paper>
-        </Grid>
-      </Grid>
+        <Card>
+          <CardContent className="text-center">
+            <div className="text-4xl font-bold text-primary">{summary.total}</div>
+            <div className="text-sm text-gray-700 mt-1 font-medium">Total Machines</div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Filter and Search Controls */}
-      <Box mb={3} display="flex" gap={2} flexWrap="wrap">
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Filter by Status</InputLabel>
-          <Select
-            value={statusFilter}
-            label="Filter by Status"
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="all">All Machines</MenuItem>
-            <MenuItem value="overdue">Overdue</MenuItem>
-            <MenuItem value="due_soon">Due Soon</MenuItem>
-            <MenuItem value="ok">OK</MenuItem>
-          </Select>
-        </FormControl>
+      <div className="flex flex-wrap gap-4 mb-6">
+        <Select
+          label="Filter by Status"
+          value={statusFilter}
+          onChange={handleFilterChange}
+          options={[
+            { value: 'all', label: 'All Machines' },
+            { value: 'overdue', label: 'Overdue' },
+            { value: 'due_soon', label: 'Due Soon' },
+            { value: 'ok', label: 'OK' },
+          ]}
+          className="min-w-[200px]"
+        />
 
-        <TextField
+        <Input
           label="Search"
           placeholder="Search by ID, name, location, or supplier..."
           value={searchTerm}
           onChange={handleSearchChange}
-          sx={{ minWidth: 300 }}
-          InputProps={{
-            startAdornment: <Search sx={{ mr: 1, color: 'action.active' }} />,
-          }}
+          startIcon="search"
+          className="min-w-[300px]"
         />
-      </Box>
+      </div>
 
       {/* Machine Table */}
       {filteredAndSortedMachines.length === 0 ? (
-        <Alert severity="info">
-          No machines found matching the selected filter{searchTerm && ' and search criteria'}.
-        </Alert>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+          <span className="material-icons-round text-blue-600">info</span>
+          <span className="text-blue-800">
+            No machines found matching the selected filter{searchTerm && ' and search criteria'}.
+          </span>
+        </div>
       ) : (
-        <TableContainer component={Paper}>
+        <Card>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'machine_id'}
-                    direction={orderBy === 'machine_id' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('machine_id')}
                   >
                     Machine ID
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'name'}
-                    direction={orderBy === 'name' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('name')}
                   >
                     Name
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'location'}
-                    direction={orderBy === 'location' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('location')}
                   >
                     Location
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'pm_frequency'}
-                    direction={orderBy === 'pm_frequency' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('pm_frequency')}
                   >
                     PM Frequency
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>
+                <TableCell header>
                   <TableSortLabel
                     active={orderBy === 'next_pm_date'}
-                    direction={orderBy === 'next_pm_date' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('next_pm_date')}
                   >
                     Next PM Date
                   </TableSortLabel>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell header align="right">
                   <TableSortLabel
                     active={orderBy === 'days_until_pm'}
-                    direction={orderBy === 'days_until_pm' ? order : 'asc'}
+                    direction={order}
                     onClick={() => handleSort('days_until_pm')}
                   >
                     Days Until PM
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>PM Status</TableCell>
-                <TableCell>Supplier</TableCell>
-                <TableCell align="center">Actions</TableCell>
+                <TableCell header>PM Status</TableCell>
+                <TableCell header>Supplier</TableCell>
+                <TableCell header align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -328,66 +266,56 @@ const MachineDashboard = () => {
                 <TableRow
                   key={machine.id}
                   hover
-                  sx={{ cursor: 'pointer' }}
                   onClick={() => navigate(`/machines/${machine.id}`)}
                 >
                   <TableCell>
-                    <Typography variant="body2" fontWeight="medium">
+                    <span className="font-medium text-gray-800">
                       {machine.machine_id}
-                    </Typography>
+                    </span>
                   </TableCell>
                   <TableCell>{machine.name}</TableCell>
                   <TableCell>{machine.location}</TableCell>
                   <TableCell>{machine.pm_frequency}</TableCell>
                   <TableCell>{formatDate(machine.next_pm_date)}</TableCell>
                   <TableCell align="right">
-                    <Typography
-                      variant="body2"
-                      color={machine.days_until_pm < 0 ? 'error' : 'text.primary'}
-                      fontWeight={machine.days_until_pm < 0 ? 'bold' : 'normal'}
-                    >
+                    <span className={`font-${machine.days_until_pm < 0 ? 'bold' : 'normal'} ${machine.days_until_pm < 0 ? 'text-error' : 'text-gray-800'}`}>
                       {formatDaysUntilPM(machine.days_until_pm)}
-                    </Typography>
+                    </span>
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      label={getPMStatusLabel(machine.pm_status)}
-                      color={getPMStatusColor(machine.pm_status)}
-                      size="small"
-                    />
+                    <Badge variant={getPMStatusVariant(machine.pm_status)} size="sm">
+                      {getPMStatusLabel(machine.pm_status)}
+                    </Badge>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" noWrap>
+                    <span className="text-sm text-gray-600 truncate">
                       {machine.assigned_supplier || '-'}
-                    </Typography>
+                    </span>
                   </TableCell>
                   <TableCell align="center" onClick={(e) => e.stopPropagation()}>
-                    <Tooltip title="View Details">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => navigate(`/machines/${machine.id}`)}
-                      >
-                        <Visibility />
-                      </IconButton>
-                    </Tooltip>
+                    <button
+                      onClick={() => navigate(`/machines/${machine.id}`)}
+                      className="p-2 rounded-full text-primary hover:bg-primary-50 transition-colors"
+                      title="View Details"
+                    >
+                      <span className="material-icons-round text-xl">visibility</span>
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            component="div"
             count={filteredAndSortedMachines.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25, 50]}
           />
-        </TableContainer>
+        </Card>
       )}
-    </Box>
+    </div>
   );
 };
 
