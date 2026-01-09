@@ -8,6 +8,7 @@ import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Dialog, DialogContent, DialogActions } from '../components/ui/Dialog';
 import { Table, TableHead, TableBody, TableRow, TableCell, TableSortLabel, TablePagination } from '../components/ui/Table';
+import { useToast } from '../components/ui/Toast';
 
 import useWorkOrders from '../hooks/useWorkOrders';
 import workOrderService from '../services/workOrderService';
@@ -21,6 +22,7 @@ import {
 
 const WorkOrderView = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [orderBy, setOrderBy] = useState('created_at');
@@ -43,6 +45,12 @@ const WorkOrderView = () => {
   const [machineData, setMachineData] = useState(null);
   const [loadingMachine, setLoadingMachine] = useState(false);
   const [updatingSchedule, setUpdatingSchedule] = useState(false);
+
+  // Confirmation dialog state
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [confirming, setConfirming] = useState(false);
 
   // Reset to first page when search or filter changes
   const handleSearchChange = (e) => {
@@ -123,7 +131,7 @@ const WorkOrderView = () => {
 
   const handleApprove = async () => {
     if (!approverName.trim()) {
-      alert('Please enter approver name');
+      toast.warning('Please enter approver name to continue.');
       return;
     }
 
@@ -134,36 +142,40 @@ const WorkOrderView = () => {
       setSelectedWO(null);
       setApproverName('');
       refetch();
-      alert(`Work Order ${selectedWO.wo_number} approved successfully!`);
+      toast.success(`Work Order ${selectedWO.wo_number} has been approved successfully.`);
     } catch (err) {
-      alert('Failed to approve work order: ' + (err.response?.data?.detail || err.message));
+      toast.error(err.response?.data?.detail || 'Unable to approve work order. Please try again.');
     } finally {
       setApproving(false);
     }
   };
 
   const handleComplete = async (woId, woNumber) => {
-    if (!window.confirm(`Complete work order ${woNumber}?`)) return;
-
-    try {
-      await workOrderService.completeWorkOrder(woId);
-      refetch();
-      alert(`Work Order ${woNumber} marked as completed!`);
-    } catch (err) {
-      alert('Failed to complete work order: ' + (err.response?.data?.detail || err.message));
-    }
+    setConfirmMessage(`Complete work order ${woNumber}?`);
+    setConfirmAction(async () => {
+      try {
+        await workOrderService.completeWorkOrder(woId);
+        refetch();
+        toast.success(`Work Order ${woNumber} marked as completed!`);
+      } catch (err) {
+        toast.error('Failed to complete work order: ' + (err.response?.data?.detail || err.message));
+      }
+    });
+    setConfirmDialogOpen(true);
   };
 
   const handleCancel = async (woId, woNumber) => {
-    if (!window.confirm(`Cancel work order ${woNumber}?`)) return;
-
-    try {
-      await workOrderService.cancelWorkOrder(woId);
-      refetch();
-      alert(`Work Order ${woNumber} cancelled!`);
-    } catch (err) {
-      alert('Failed to cancel work order: ' + (err.response?.data?.detail || err.message));
-    }
+    setConfirmMessage(`Cancel work order ${woNumber}?`);
+    setConfirmAction(async () => {
+      try {
+        await workOrderService.cancelWorkOrder(woId);
+        refetch();
+        toast.success(`Work Order ${woNumber} cancelled!`);
+      } catch (err) {
+        toast.error('Failed to cancel work order: ' + (err.response?.data?.detail || err.message));
+      }
+    });
+    setConfirmDialogOpen(true);
   };
 
   // Calculate default scheduled date based on machine's next_pm_date
@@ -221,7 +233,7 @@ const WorkOrderView = () => {
       setScheduledDate(defaultDate);
     } catch (err) {
       console.error('Error fetching machine data:', err);
-      alert('Failed to load machine data: ' + (err.response?.data?.detail || err.message));
+      toast.error('Failed to load machine data: ' + (err.response?.data?.detail || err.message));
 
       // Fallback: use current scheduled_date or today + 2
       if (wo.scheduled_date) {
@@ -239,7 +251,7 @@ const WorkOrderView = () => {
   // Update work order scheduled date
   const handleUpdateSchedule = async () => {
     if (!scheduledDate) {
-      alert('Please select a scheduled date');
+      toast.warning('Please select a scheduled date');
       return;
     }
 
@@ -250,7 +262,7 @@ const WorkOrderView = () => {
     selectedDate.setHours(0, 0, 0, 0);
 
     if (selectedDate < today) {
-      alert('Scheduled date cannot be in the past. Please select today or a future date.');
+      toast.warning('Scheduled date cannot be in the past. Please select today or a future date.');
       return;
     }
 
@@ -271,9 +283,9 @@ const WorkOrderView = () => {
       // Refresh work orders list
       refetch();
 
-      alert(`Scheduled date updated successfully for ${selectedWOForSchedule.wo_number}!`);
+      toast.success(`Scheduled date updated successfully for ${selectedWOForSchedule.wo_number}!`);
     } catch (err) {
-      alert('Failed to update scheduled date: ' + (err.response?.data?.detail || err.message));
+      toast.error('Failed to update scheduled date: ' + (err.response?.data?.detail || err.message));
     } finally {
       setUpdatingSchedule(false);
     }
@@ -287,6 +299,29 @@ const WorkOrderView = () => {
     setSelectedWOForSchedule(null);
     setScheduledDate('');
     setMachineData(null);
+  };
+
+  // Handle confirmation dialog
+  const handleConfirm = async () => {
+    if (confirmAction) {
+      setConfirming(true);
+      try {
+        await confirmAction();
+      } finally {
+        setConfirming(false);
+        setConfirmDialogOpen(false);
+        setConfirmAction(null);
+        setConfirmMessage('');
+      }
+    }
+  };
+
+  const handleCancelConfirm = () => {
+    if (!confirming) {
+      setConfirmDialogOpen(false);
+      setConfirmAction(null);
+      setConfirmMessage('');
+    }
   };
 
   if (loading) {
@@ -715,6 +750,42 @@ const WorkOrderView = () => {
               </div>
             ) : (
               'Update Schedule'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={handleCancelConfirm}
+        title="Confirm Action"
+        maxWidth="sm"
+      >
+        <DialogContent>
+          <p className="text-base text-gray-700">{confirmMessage}</p>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="outlined"
+            onClick={handleCancelConfirm}
+            disabled={confirming}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleConfirm}
+            disabled={confirming}
+            startIcon={confirming ? null : "check_circle"}
+          >
+            {confirming ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Processing...
+              </div>
+            ) : (
+              'Confirm'
             )}
           </Button>
         </DialogActions>

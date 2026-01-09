@@ -9,18 +9,23 @@ import WorkOrderView from './pages/WorkOrderView';
 // Layout
 import Layout from './components/Layout/Layout';
 
+// Toast notifications
+import { ToastProvider } from './components/ui/Toast';
+
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Navigate to="/machines" replace />} />
-          <Route path="/machines" element={<MachineDashboard />} />
-          <Route path="/machines/:id" element={<MachineDetail />} />
-          <Route path="/work-orders" element={<WorkOrderView />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <ToastProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Navigate to="/machines" replace />} />
+            <Route path="/machines" element={<MachineDashboard />} />
+            <Route path="/machines/:id" element={<MachineDetail />} />
+            <Route path="/work-orders" element={<WorkOrderView />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </ToastProvider>
   );
 }
 

@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Dialog, DialogContent, DialogActions } from '../components/ui/Dialog';
 import { Table, TableHead, TableBody, TableRow, TableCell } from '../components/ui/Table';
+import { useToast } from '../components/ui/Toast';
 
 import machineService from '../services/machineService';
 import aiService from '../services/aiService';
@@ -23,6 +24,7 @@ import {
 const MachineDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [machine, setMachine] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ const MachineDetail = () => {
       // Refresh machine data to show new AI decision
       await fetchMachineDetails();
     } catch (err) {
-      alert('Failed to get AI decision: ' + (err.response?.data?.detail || err.message));
+      toast.error('Failed to get AI decision: ' + (err.response?.data?.detail || err.message));
     } finally {
       setAiLoading(false);
     }
