@@ -48,18 +48,23 @@ class MachineService:
             # Fetch all machines (without limit) to filter by pm_status
             all_machines = query.all()
 
-            # Filter by PM status
+            # Filter by PM status and collect with days_until_pm for sorting
             filtered_machines = []
             for machine in all_machines:
                 machine_pm_status = self.calculate_pm_status(machine.next_pm_date)
+                days_until = self.calculate_days_until_pm(machine.next_pm_date)
                 if pm_status == "due_soon,overdue":
                     if machine_pm_status in ["due_soon", "overdue"]:
-                        filtered_machines.append(machine)
+                        filtered_machines.append((machine, days_until))
                 elif machine_pm_status == pm_status:
-                    filtered_machines.append(machine)
+                    filtered_machines.append((machine, days_until))
 
-            # Apply skip and limit to filtered results
-            return filtered_machines[skip:skip + limit]
+            # Sort by days_until_pm ascending (overdue machines with negative values appear first)
+            filtered_machines.sort(key=lambda x: x[1])
+
+            # Extract machines only and apply skip and limit
+            sorted_machines = [machine for machine, _ in filtered_machines]
+            return sorted_machines[skip:skip + limit]
 
         # No pm_status filter, apply skip and limit directly in SQL
         machines = query.offset(skip).limit(limit).all()
@@ -226,12 +231,13 @@ class MachineService:
     def get_machines_due_for_pm(self, days_threshold: int = 30) -> List[Machine]:
         """
         Get machines that are due for PM within the threshold.
+        Results are ordered by days_until_pm (ascending) so overdue machines appear first.
 
         Args:
             days_threshold: Number of days to look ahead
 
         Returns:
-            List of machines due for PM
+            List of machines due for PM, ordered by urgency (overdue first)
         """
         today = datetime.now().date()
         machines = self.db.query(Machine).all()
@@ -240,6 +246,10 @@ class MachineService:
         for machine in machines:
             days_until = self.calculate_days_until_pm(machine.next_pm_date)
             if days_until <= days_threshold:
-                due_machines.append(machine)
+                due_machines.append((machine, days_until))
 
-        return due_machines
+        # Sort by days_until_pm ascending (negative values first = overdue machines first)
+        due_machines.sort(key=lambda x: x[1])
+
+        # Return only the machine objects, not the tuples
+        return [machine for machine, _ in due_machines]

@@ -152,7 +152,7 @@ const WorkOrderView = () => {
 
   const handleComplete = async (woId, woNumber) => {
     setConfirmMessage(`Complete work order ${woNumber}?`);
-    setConfirmAction(async () => {
+    setConfirmAction(() => async () => {
       try {
         await workOrderService.completeWorkOrder(woId);
         refetch();
@@ -166,7 +166,7 @@ const WorkOrderView = () => {
 
   const handleCancel = async (woId, woNumber) => {
     setConfirmMessage(`Cancel work order ${woNumber}?`);
-    setConfirmAction(async () => {
+    setConfirmAction(() => async () => {
       try {
         await workOrderService.cancelWorkOrder(woId);
         refetch();

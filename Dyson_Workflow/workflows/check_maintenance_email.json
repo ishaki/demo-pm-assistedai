@@ -1,0 +1,119 @@
+{
+  "name": "Email → AI Agent → Date Extraction",
+  "nodes": [
+    {
+      "name": "IMAP Email Trigger",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "parameters": {
+        "mailbox": "INBOX",
+        "options": {
+          "markSeen": true
+        }
+      },
+      "credentials": {
+        "imap": {
+          "id": "REPLACE_WITH_IMAP_CREDENTIAL_ID",
+          "name": "IMAP Account"
+        }
+      }
+    },
+    {
+      "name": "Check Subject",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.subject }}",
+              "operation": "contains",
+              "value2": "Maintenance"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "AI Extract Email Data",
+      "type": "n8n-nodes-base.aiAgent",
+      "typeVersion": 1,
+      "position": [700, 300],
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.1,
+        "systemMessage": "You are an information extraction agent.\n\nSTRICT RULES:\n- Do NOT guess or infer missing information\n- Extract ONLY what is explicitly written in the email\n- If a required value is missing, return null\n- Output MUST be valid JSON only\n- Do NOT include explanations, markdown, or extra text\n- Dates must be normalized to ISO format: YYYY-MM-DD\n- If multiple dates exist, choose the date referring to the main event\n- Ignore email signatures, disclaimers, and quoted replies\n- If the date is relative (e.g., tomorrow, next Monday), return null\n\nDATA TO EXTRACT:\n- identifier: email subject exactly as written\n- event_date: date mentioned by the sender in the email body",
+        "userMessage": "Email Subject:\n{{ $json.subject }}\n\nEmail Body:\n{{ $json.text || $json.html }}"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "name": "Set Final Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [950, 300],
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "identifier",
+              "value": "={{ $json.identifier }}"
+            },
+            {
+              "name": "event_date",
+              "value": "={{ $json.event_date }}"
+            },
+            {
+              "name": "email_received_at",
+              "value": "={{ $node[\"IMAP Email Trigger\"].json.date }}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "IMAP Email Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Subject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Subject": {
+      "main": [
+        [
+          {
+            "node": "AI Extract Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Extract Email Data": {
+      "main": [
+        [
+          {
+            "node": "Set Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false
+}

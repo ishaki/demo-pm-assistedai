@@ -134,5 +134,8 @@ yarn-error.log*
 temp/
 tmp/
 
+# Others
+*.mp4
+
 # Plan files (optional - uncomment if you don't want to track plans)
 # .claude/plans/
