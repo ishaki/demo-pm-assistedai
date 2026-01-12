@@ -91,24 +91,27 @@ class BaseLLMProvider(ABC):
         return """You are an AI assistant for preventive maintenance management.
 Your task is to analyze machine data and decide the appropriate action for preventive maintenance.
 
-**Decision Rules (Apply in this order):**
+**Decision Rules (Apply in STRICT order):**
 1. SEND_NOTIFICATION: If ANY work order has status "Approved" → Notify supplier to schedule work
 2. WAIT: If ANY work order has status "Pending_Approval" or "Draft" → Wait for approval/completion
-3. CREATE_WORK_ORDER: If PM is due within 30 days AND no work orders exist → Create new work order
-4. WAIT: If PM is not urgent (more than 30 days away) → Wait until closer to due date
+3. CREATE_WORK_ORDER: If NO work orders exist AND (PM is overdue OR due within 30 days) → Create new work order
+4. WAIT: If PM is not urgent (more than 30 days away) AND no work orders exist → Wait until closer to due date
 
-**Important:**
-- Check existing work orders FIRST before deciding
-- "Approved" status means supplier needs to be notified immediately
-- Do not create duplicate work orders if one already exists
+**Critical Rules:**
+- "Overdue" means days_until_pm is NEGATIVE (e.g., -5 means 5 days overdue)
+- "Due within 30 days" means days_until_pm is between -999 and 30 (includes overdue!)
+- ALWAYS check existing_work_orders FIRST before creating a new work order
+- If machine is overdue and has NO work orders, you MUST choose CREATE_WORK_ORDER
+- "Approved" status means supplier needs to be notified to start work immediately
+- Do not create duplicate work orders if one already exists in ANY status
 
 **Priority Rules:**
-- High: PM is overdue or due within 7 days
+- High: PM is overdue (days_until_pm < 0) OR due within 7 days
 - Medium: PM is due within 8-21 days
 - Low: PM is due within 22-30 days
 
 **Confidence Guidelines:**
-- 0.9-1.0: Very clear decision based on rules
+- 0.9-1.0: Very clear decision based on rules (e.g., overdue with no work order)
 - 0.7-0.89: Confident but some ambiguity
 - 0.5-0.69: Moderate confidence, requires review
 - Below 0.5: Low confidence, manual review required
@@ -144,6 +147,9 @@ Your task is to analyze machine data and decide the appropriate action for preve
         Returns:
             Formatted user prompt
         """
+        days_until_pm = machine_data.get('days_until_pm', 0)
+        pm_status = "OVERDUE" if days_until_pm < 0 else "DUE SOON" if days_until_pm <= 30 else "OK"
+
         return f"""
 **Machine Information:**
 - Machine ID: {machine_data.get('machine_id')}
@@ -152,7 +158,7 @@ Your task is to analyze machine data and decide the appropriate action for preve
 - PM Frequency: {machine_data.get('pm_frequency')}
 - Last PM Date: {machine_data.get('last_pm_date')}
 - Next PM Date: {machine_data.get('next_pm_date')}
-- Days Until PM: {machine_data.get('days_until_pm')} days
+- Days Until PM: {days_until_pm} days ({pm_status})
 - Assigned Supplier: {machine_data.get('assigned_supplier')}
 
 **Recent Maintenance History ({len(maintenance_history)} records):**

@@ -1,3 +1,12 @@
+# Production Docker Compose Configuration
+# IMPORTANT: Before running, create a .env file with the following REQUIRED variables:
+#   - DATABASE_URL
+#   - CORS_ORIGINS (e.g., https://your-domain.com)
+#   - REACT_APP_API_URL (e.g., https://api.your-domain.com/api/v1)
+#   - At least one LLM API key (OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY)
+#
+# See .env.production.example for a complete template
+
 services:
   # FastAPI Backend - Production
   backend:
@@ -23,7 +32,7 @@ services:
       - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
       - SMTP_USE_TLS=${SMTP_USE_TLS:-True}
       - DEBUG=${DEBUG:-False}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - CORS_ORIGINS=${CORS_ORIGINS}
     networks:
       - agenticai-demo-network
     healthcheck:
@@ -39,7 +48,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8000/api/v1}
+        - REACT_APP_API_URL=${REACT_APP_API_URL}
     container_name: dyson_frontend_prod
     restart: unless-stopped
     ports:
@@ -49,10 +58,11 @@ services:
     networks:
       - agenticai-demo-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
 
   # n8n Workflow Automation - Production
   n8n:
