@@ -16,7 +16,7 @@ const MachineDashboard = () => {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [orderBy, setOrderBy] = useState('machine_id');
+  const [orderBy, setOrderBy] = useState('days_until_pm');
   const [order, setOrder] = useState('asc');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
