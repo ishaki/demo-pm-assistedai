@@ -30,6 +30,10 @@ def get_machines(
         description="Filter by PM status: overdue, due_soon, ok, or due_soon,overdue"
     ),
     location: Optional[str] = Query(None, description="Filter by location"),
+    exclude_scheduled: bool = Query(
+        False,
+        description="Exclude machines with approved work orders that have scheduled dates"
+    ),
     db: Session = Depends(get_db)
 ):
     """
@@ -39,13 +43,15 @@ def get_machines(
     - **limit**: Maximum number of records to return
     - **pm_status**: Filter by PM status (overdue, due_soon, ok)
     - **location**: Filter by machine location
+    - **exclude_scheduled**: Exclude machines with scheduled approved work orders (default: false)
     """
     service = MachineService(db)
     machines = service.get_all_machines(
         skip=skip,
         limit=limit,
         pm_status=pm_status,
-        location=location
+        location=location,
+        exclude_scheduled=exclude_scheduled
     )
 
     # Enrich each machine with PM status

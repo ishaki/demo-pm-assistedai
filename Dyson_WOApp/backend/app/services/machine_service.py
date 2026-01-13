@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import and_, exists
 from datetime import datetime, date
 from typing import List, Optional
 from ..models.machine import Machine
@@ -19,7 +20,8 @@ class MachineService:
         skip: int = 0,
         limit: int = 100,
         pm_status: Optional[str] = None,
-        location: Optional[str] = None
+        location: Optional[str] = None,
+        exclude_scheduled: bool = False
     ) -> List[Machine]:
         """
         Get all machines with optional filtering.
@@ -29,6 +31,7 @@ class MachineService:
             limit: Maximum number of records to return
             pm_status: Filter by PM status (overdue, due_soon, ok)
             location: Filter by location
+            exclude_scheduled: Exclude machines with approved work orders that have scheduled dates
 
         Returns:
             List of Machine objects
@@ -38,6 +41,18 @@ class MachineService:
         # Filter by location if provided
         if location:
             query = query.filter(Machine.location == location)
+
+        # Exclude machines with scheduled approved work orders if requested
+        if exclude_scheduled:
+            from ..models.work_order import WorkOrder
+            has_scheduled_approved_wo = exists().where(
+                and_(
+                    WorkOrder.machine_id == Machine.id,
+                    WorkOrder.status == "Approved",
+                    WorkOrder.scheduled_date.isnot(None)
+                )
+            )
+            query = query.filter(~has_scheduled_approved_wo)
 
         # SQL Server requires ORDER BY when using OFFSET/LIMIT
         query = query.order_by(Machine.id)
