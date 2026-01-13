@@ -3,6 +3,8 @@
  */
 export const getPMStatusLabel = (pmStatus) => {
   switch (pmStatus) {
+    case 'scheduled':
+      return 'Scheduled';
     case 'overdue':
       return 'Overdue';
     case 'due_soon':
@@ -61,6 +63,8 @@ export const getConfidenceLevel = (confidence) => {
  */
 export const getPMStatusVariant = (pmStatus) => {
   switch (pmStatus) {
+    case 'scheduled':
+      return 'info';
     case 'overdue':
       return 'error';
     case 'due_soon':

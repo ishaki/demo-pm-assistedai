@@ -29,7 +29,7 @@ class MachineService:
         Args:
             skip: Number of records to skip
             limit: Maximum number of records to return
-            pm_status: Filter by PM status (overdue, due_soon, ok)
+            pm_status: Filter by PM status (scheduled, overdue, due_soon, ok)
             location: Filter by location
             exclude_scheduled: Exclude machines with approved work orders that have scheduled dates
 
@@ -66,7 +66,7 @@ class MachineService:
             # Filter by PM status and collect with days_until_pm for sorting
             filtered_machines = []
             for machine in all_machines:
-                machine_pm_status = self.calculate_pm_status(machine.next_pm_date)
+                machine_pm_status = self.calculate_pm_status(machine.next_pm_date, machine)
                 days_until = self.calculate_days_until_pm(machine.next_pm_date)
                 if pm_status == "due_soon,overdue":
                     if machine_pm_status in ["due_soon", "overdue"]:
@@ -189,17 +189,32 @@ class MachineService:
             .all()
         )
 
-    @staticmethod
-    def calculate_pm_status(next_pm_date: date) -> str:
+    def calculate_pm_status(self, next_pm_date: date, machine: Optional[Machine] = None) -> str:
         """
-        Calculate PM status based on next PM date.
+        Calculate PM status based on next PM date and work order status.
 
         Args:
             next_pm_date: Next scheduled PM date
+            machine: Machine object to check for scheduled work orders (optional)
 
         Returns:
-            Status string: 'overdue', 'due_soon', or 'ok'
+            Status string: 'scheduled', 'overdue', 'due_soon', or 'ok'
         """
+        # Check if machine has approved work order with scheduled date (highest priority)
+        if machine:
+            from ..models.work_order import WorkOrder
+            has_scheduled_wo = self.db.query(WorkOrder).filter(
+                and_(
+                    WorkOrder.machine_id == machine.id,
+                    WorkOrder.status == "Approved",
+                    WorkOrder.scheduled_date.isnot(None)
+                )
+            ).first()
+
+            if has_scheduled_wo:
+                return "scheduled"
+
+        # Fall through to date-based status calculation
         today = datetime.now().date()
         days_until = (next_pm_date - today).days
 
@@ -234,7 +249,7 @@ class MachineService:
         Returns:
             Dictionary with enriched machine data
         """
-        pm_status = self.calculate_pm_status(machine.next_pm_date)
+        pm_status = self.calculate_pm_status(machine.next_pm_date, machine)
         days_until_pm = self.calculate_days_until_pm(machine.next_pm_date)
 
         return {

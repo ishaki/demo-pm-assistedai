@@ -27,7 +27,7 @@ def get_machines(
     limit: int = Query(100, ge=1, le=1000, description="Maximum number of records"),
     pm_status: Optional[str] = Query(
         None,
-        description="Filter by PM status: overdue, due_soon, ok, or due_soon,overdue"
+        description="Filter by PM status: scheduled, overdue, due_soon, ok, or due_soon,overdue"
     ),
     location: Optional[str] = Query(None, description="Filter by location"),
     exclude_scheduled: bool = Query(
@@ -41,7 +41,7 @@ def get_machines(
 
     - **skip**: Number of records to skip (pagination)
     - **limit**: Maximum number of records to return
-    - **pm_status**: Filter by PM status (overdue, due_soon, ok)
+    - **pm_status**: Filter by PM status (scheduled, overdue, due_soon, ok)
     - **location**: Filter by machine location
     - **exclude_scheduled**: Exclude machines with scheduled approved work orders (default: false)
     """
