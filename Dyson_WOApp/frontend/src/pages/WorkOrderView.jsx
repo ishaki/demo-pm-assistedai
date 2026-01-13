@@ -52,6 +52,12 @@ const WorkOrderView = () => {
   const [confirmMessage, setConfirmMessage] = useState('');
   const [confirming, setConfirming] = useState(false);
 
+  // Complete work order dialog state
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+  const [selectedWOForComplete, setSelectedWOForComplete] = useState(null);
+  const [completedDate, setCompletedDate] = useState('');
+  const [completingWorkOrder, setCompletingWorkOrder] = useState(false);
+
   // Reset to first page when search or filter changes
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -150,18 +156,79 @@ const WorkOrderView = () => {
     }
   };
 
-  const handleComplete = async (woId, woNumber) => {
-    setConfirmMessage(`Complete work order ${woNumber}?`);
-    setConfirmAction(() => async () => {
-      try {
-        await workOrderService.completeWorkOrder(woId);
-        refetch();
-        toast.success(`Work Order ${woNumber} marked as completed!`);
-      } catch (err) {
-        toast.error('Failed to complete work order: ' + (err.response?.data?.detail || err.message));
+  // Calculate default completed date based on scheduled date
+  const calculateDefaultCompletedDate = (scheduledDate) => {
+    const today = new Date().toISOString().split('T')[0];
+
+    if (scheduledDate) {
+      const scheduled = new Date(scheduledDate);
+      scheduled.setHours(0, 0, 0, 0);
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+
+      // If scheduled date is today or in the past, use it as default
+      if (scheduled <= todayDate) {
+        return scheduledDate;
       }
-    });
-    setConfirmDialogOpen(true);
+    }
+
+    // Otherwise default to today
+    return today;
+  };
+
+  const handleOpenCompleteDialog = async (wo) => {
+    setSelectedWOForComplete(wo);
+    const defaultDate = calculateDefaultCompletedDate(wo.scheduled_date);
+    setCompletedDate(defaultDate);
+    setCompleteDialogOpen(true);
+  };
+
+  const handleCloseCompleteDialog = () => {
+    setCompleteDialogOpen(false);
+    setSelectedWOForComplete(null);
+    setCompletedDate('');
+  };
+
+  const handleCompleteWorkOrder = async () => {
+    // Validate completed_date is not empty
+    if (!completedDate) {
+      toast.warning('Please select a completion date');
+      return;
+    }
+
+    // Validate completed_date is not in the future
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const completed = new Date(completedDate);
+    completed.setHours(0, 0, 0, 0);
+
+    if (completed > today) {
+      toast.warning('Completion date cannot be in the future');
+      return;
+    }
+
+    // Validate completed_date is not before scheduled_date
+    if (selectedWOForComplete.scheduled_date) {
+      const scheduled = new Date(selectedWOForComplete.scheduled_date);
+      scheduled.setHours(0, 0, 0, 0);
+
+      if (completed < scheduled) {
+        toast.warning('Completion date cannot be before scheduled date');
+        return;
+      }
+    }
+
+    try {
+      setCompletingWorkOrder(true);
+      await workOrderService.completeWorkOrder(selectedWOForComplete.id, completedDate);
+      handleCloseCompleteDialog();
+      refetch();
+      toast.success(`Work Order ${selectedWOForComplete.wo_number} marked as completed!`);
+    } catch (err) {
+      toast.error('Failed to complete work order: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setCompletingWorkOrder(false);
+    }
   };
 
   const handleCancel = async (woId, woNumber) => {
@@ -528,9 +595,9 @@ const WorkOrderView = () => {
                       )}
 
                       {/* Complete Button */}
-                      {wo.status === 'Approved' && (
+                      {wo.status === 'Approved' && wo.scheduled_date && (
                         <button
-                          onClick={() => handleComplete(wo.id, wo.wo_number)}
+                          onClick={() => handleOpenCompleteDialog(wo)}
                           className="p-2 rounded-full text-primary hover:bg-primary-50 transition-colors"
                           title="Complete"
                         >
@@ -750,6 +817,84 @@ const WorkOrderView = () => {
               </div>
             ) : (
               'Update Schedule'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Complete Work Order Dialog */}
+      <Dialog
+        open={completeDialogOpen}
+        onClose={handleCloseCompleteDialog}
+        title="Complete Work Order"
+        maxWidth="sm"
+      >
+        <DialogContent>
+          {selectedWOForComplete && (
+            <div className="flex flex-col gap-4">
+              {/* Work Order Info */}
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Work Order</p>
+                <p className="text-lg font-bold text-gray-800">
+                  {selectedWOForComplete.wo_number}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Machine</p>
+                <p className="text-base font-medium text-gray-800">
+                  {selectedWOForComplete.machine_name || `Machine #${selectedWOForComplete.machine_id}`}
+                </p>
+              </div>
+
+              {/* Scheduled Date */}
+              {selectedWOForComplete.scheduled_date && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Scheduled Date</p>
+                  <p className="text-base font-medium text-gray-800">
+                    {formatDate(selectedWOForComplete.scheduled_date)}
+                  </p>
+                </div>
+              )}
+
+              {/* Completion Date Picker */}
+              <Input
+                label="Completion Date"
+                type="date"
+                value={completedDate}
+                onChange={(e) => setCompletedDate(e.target.value)}
+                disabled={completingWorkOrder}
+                required
+                helperText="Select the date when work was completed"
+                inputProps={{
+                  min: selectedWOForComplete.scheduled_date || undefined,
+                  max: new Date().toISOString().split('T')[0],
+                }}
+              />
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="outlined"
+            onClick={handleCloseCompleteDialog}
+            disabled={completingWorkOrder}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleCompleteWorkOrder}
+            disabled={completingWorkOrder || !completedDate}
+            startIcon={completingWorkOrder ? null : "check_circle"}
+          >
+            {completingWorkOrder ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Completing...
+              </div>
+            ) : (
+              'Complete Work Order'
             )}
           </Button>
         </DialogActions>

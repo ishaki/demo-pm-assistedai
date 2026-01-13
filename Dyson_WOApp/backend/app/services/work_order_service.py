@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import List, Optional
 import logging
 from ..models.work_order import WorkOrder
@@ -153,12 +153,13 @@ class WorkOrderService:
         self.db.refresh(db_wo)
         return db_wo
 
-    def complete_work_order(self, wo_id: int) -> Optional[WorkOrder]:
+    def complete_work_order(self, wo_id: int, completed_date: date) -> Optional[WorkOrder]:
         """
         Mark work order as completed and update machine's PM schedule.
 
         Args:
             wo_id: Work order database ID
+            completed_date: Date when work was completed
 
         Returns:
             Updated WorkOrder object or None
@@ -168,25 +169,24 @@ class WorkOrderService:
             return None
 
         # Update work order status
-        today = datetime.now().date()
         db_wo.status = "Completed"
-        db_wo.completed_date = today
+        db_wo.completed_date = completed_date
 
         # Update machine's PM schedule
         machine = self.db.query(Machine).filter(Machine.id == db_wo.machine_id).first()
         if machine:
-            # Update last PM date to today
-            machine.last_pm_date = today
+            # Update last PM date to completed date
+            machine.last_pm_date = completed_date
 
             # Calculate next PM date based on scheduled_date + frequency
-            # Use scheduled_date if available, otherwise use today
-            base_date = db_wo.scheduled_date if db_wo.scheduled_date else today
+            # Use scheduled_date if available, otherwise use completed_date
+            base_date = db_wo.scheduled_date if db_wo.scheduled_date else completed_date
             next_pm_date = self._calculate_next_pm_date(base_date, machine.pm_frequency)
             machine.next_pm_date = next_pm_date
 
             logger.info(
                 f"Updated PM schedule for machine {machine.machine_id}: "
-                f"last_pm_date={today}, next_pm_date={next_pm_date} "
+                f"last_pm_date={completed_date}, next_pm_date={next_pm_date} "
                 f"(calculated from scheduled_date={base_date}), "
                 f"frequency={machine.pm_frequency}"
             )
@@ -194,7 +194,7 @@ class WorkOrderService:
             # Create maintenance history record
             maintenance_record = MaintenanceHistory(
                 machine_id=db_wo.machine_id,
-                maintenance_date=today,
+                maintenance_date=completed_date,
                 maintenance_type="Preventive",
                 notes=f"Completed work order {db_wo.wo_number}. {db_wo.notes or ''}".strip(),
                 performed_by=machine.assigned_supplier,

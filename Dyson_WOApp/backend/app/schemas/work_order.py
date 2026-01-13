@@ -52,3 +52,8 @@ class WorkOrderResponse(WorkOrderBase):
 class WorkOrderApproval(BaseModel):
     """Schema for approving a work order"""
     approved_by: str = Field(..., min_length=1, max_length=200, description="Name of approver")
+
+
+class WorkOrderCompletion(BaseModel):
+    """Schema for completing a work order"""
+    completed_date: date = Field(..., description="Date when work was completed")

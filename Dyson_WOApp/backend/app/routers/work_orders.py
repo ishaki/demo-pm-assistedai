@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from datetime import datetime
 
 from ..database import get_db
 from ..services.work_order_service import WorkOrderService
@@ -8,7 +9,8 @@ from ..schemas.work_order import (
     WorkOrderCreate,
     WorkOrderUpdate,
     WorkOrderResponse,
-    WorkOrderApproval
+    WorkOrderApproval,
+    WorkOrderCompletion
 )
 
 router = APIRouter()
@@ -188,12 +190,14 @@ async def approve_work_order(
 @router.post("/{wo_id}/complete", response_model=WorkOrderResponse)
 async def complete_work_order(
     wo_id: int,
+    completion_data: WorkOrderCompletion,
     db: Session = Depends(get_db)
 ):
     """
     Mark work order as completed.
 
     - **wo_id**: Database ID of the work order
+    - **completion_data**: Completion details including completed_date
     """
     service = WorkOrderService(db)
 
@@ -211,7 +215,24 @@ async def complete_work_order(
             detail=f"Only approved work orders can be completed. Current status: {work_order.status}"
         )
 
-    work_order = service.complete_work_order(wo_id)
+    # Validate completed_date
+    today = datetime.now().date()
+
+    # Check if completed_date is not in the future
+    if completion_data.completed_date > today:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Completion date cannot be in the future"
+        )
+
+    # Check if completed_date is not before scheduled_date
+    if work_order.scheduled_date and completion_data.completed_date < work_order.scheduled_date:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Completion date cannot be before scheduled date ({work_order.scheduled_date})"
+        )
+
+    work_order = service.complete_work_order(wo_id, completion_data.completed_date)
 
     # Send completion notification to supplier
     from ..services.notification_service import NotificationService

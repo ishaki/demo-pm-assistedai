@@ -46,8 +46,10 @@ export const workOrderService = {
   /**
    * Complete a work order
    */
-  completeWorkOrder: async (woId) => {
-    const response = await api.post(`/work-orders/${woId}/complete`);
+  completeWorkOrder: async (woId, completedDate) => {
+    const response = await api.post(`/work-orders/${woId}/complete`, {
+      completed_date: completedDate
+    });
     return response.data;
   },
 
