@@ -15,6 +15,28 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+def get_work_order_info(work_order) -> dict:
+    """
+    Extract work order information for response.
+
+    Args:
+        work_order: WorkOrder object
+
+    Returns:
+        Dictionary with work order fields
+    """
+    return {
+        "machine_id": work_order.machine_id,
+        "machine_name": work_order.machine.name if work_order.machine else None,
+        "wo_status": work_order.status,
+        "priority": work_order.priority,
+        "creation_source": work_order.creation_source,
+        "created_at": work_order.created_at,
+        "updated_at": work_order.updated_at,
+        "notes": work_order.notes
+    }
+
+
 def extract_wo_number_from_subject(subject: str) -> Optional[str]:
     """
     Extract work order number from email subject.
@@ -118,13 +140,17 @@ async def extract_date_from_email(
                 message=f"Work order {wo_number} not found"
             )
 
+        # Get work order information
+        wo_info = get_work_order_info(work_order)
+
         # 3. Validate work order status
         if work_order.status != "Approved":
             return EmailDateExtractionResponse(
                 status="Error",
                 wo_number=wo_number,
                 wo_id=work_order.id,
-                message=f"Work order status is '{work_order.status}', must be 'Approved'"
+                message=f"Work order status is '{work_order.status}', must be 'Approved'",
+                **wo_info
             )
 
         # 4. Extract date using AI
@@ -142,7 +168,8 @@ async def extract_date_from_email(
                 wo_number=wo_number,
                 wo_id=work_order.id,
                 confidence=confidence,
-                message=f"AI confidence too low ({confidence:.2f}). {explanation}"
+                message=f"AI confidence too low ({confidence:.2f}). {explanation}",
+                **wo_info
             )
 
         # 6. Validate and parse date
@@ -152,7 +179,8 @@ async def extract_date_from_email(
                 wo_number=wo_number,
                 wo_id=work_order.id,
                 confidence=confidence,
-                message="No date extracted from email"
+                message="No date extracted from email",
+                **wo_info
             )
 
         parsed_date, error = validate_scheduled_date(selected_date_str)
@@ -162,7 +190,8 @@ async def extract_date_from_email(
                 wo_number=wo_number,
                 wo_id=work_order.id,
                 confidence=confidence,
-                message=error
+                message=error,
+                **wo_info
             )
 
         # 7. Update work order
@@ -174,10 +203,12 @@ async def extract_date_from_email(
                 status="Error",
                 wo_number=wo_number,
                 wo_id=work_order.id,
-                message="Failed to update work order"
+                message="Failed to update work order",
+                **wo_info
             )
 
-        # 8. Success!
+        # 8. Success! Get updated work order info
+        updated_wo_info = get_work_order_info(updated_wo)
         logger.info(f"Updated {wo_number} scheduled_date to {parsed_date}")
         return EmailDateExtractionResponse(
             status="Success",
@@ -186,7 +217,8 @@ async def extract_date_from_email(
             extracted_date=parsed_date,
             confidence=confidence,
             message=f"Work order {wo_number} scheduled date updated to {parsed_date}",
-            updated=True
+            updated=True,
+            **updated_wo_info
         )
 
     except Exception as e:
