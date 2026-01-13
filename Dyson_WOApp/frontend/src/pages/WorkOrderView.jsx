@@ -499,15 +499,6 @@ const WorkOrderView = () => {
                 </TableCell>
                 <TableCell header>
                   <TableSortLabel
-                    active={orderBy === 'creation_source'}
-                    direction={order}
-                    onClick={() => handleSort('creation_source')}
-                  >
-                    Source
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell header>
-                  <TableSortLabel
                     active={orderBy === 'created_at'}
                     direction={order}
                     onClick={() => handleSort('created_at')}
@@ -559,20 +550,6 @@ const WorkOrderView = () => {
                     ) : (
                       'N/A'
                     )}
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      {wo.creation_source === 'AI' && (
-                        <span className="material-icons-round text-sm text-primary">smart_toy</span>
-                      )}
-                      <Badge
-                        variant={wo.creation_source === 'AI' ? 'primary' : 'default'}
-                        size="sm"
-                      >
-                        {wo.creation_source}
-                      </Badge>
-                    </div>
                   </TableCell>
 
                   <TableCell>{formatDateTime(wo.created_at)}</TableCell>
