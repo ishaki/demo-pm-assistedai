@@ -35,8 +35,12 @@ class DateExtractionService:
 
             if provider_name == "OpenAI":
                 result = await self._extract_with_openai(system_prompt, user_prompt)
-            else:  # Claude or Gemini
+            elif provider_name == "Claude":
                 result = await self._extract_with_claude(system_prompt, user_prompt)
+            elif provider_name == "Gemini":
+                result = self._extract_with_gemini(system_prompt, user_prompt)
+            else:
+                raise ValueError(f"Unsupported LLM provider: {provider_name}")
 
             logger.info(f"Date extraction result: {result}")
             return result
@@ -74,6 +78,23 @@ class DateExtractionService:
             messages=[{"role": "user", "content": user_prompt}]
         )
         content = message.content[0].text
+        # Extract JSON from markdown if needed
+        content = self._extract_json_from_response(content)
+        return json.loads(content)
+
+    def _extract_with_gemini(self, system_prompt: str, user_prompt: str) -> dict:
+        """Extract date using Gemini provider"""
+        # Combine system and user prompts for Gemini
+        full_prompt = f"{system_prompt}\n\n{user_prompt}"
+
+        # Gemini's generate_content is synchronous, not async
+        response = self.llm_provider.client.models.generate_content(
+            model=self.llm_provider.model_name,
+            contents=full_prompt,
+            config=self.llm_provider.generation_config
+        )
+
+        content = response.text
         # Extract JSON from markdown if needed
         content = self._extract_json_from_response(content)
         return json.loads(content)
