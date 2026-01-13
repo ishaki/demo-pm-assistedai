@@ -144,9 +144,10 @@ async def root():
 
 
 # Import and register routers
-from .routers import machines, work_orders, ai, workflow_logs
+from .routers import machines, work_orders, ai, workflow_logs, workflow_webhooks
 
 app.include_router(machines.router, prefix=f"{settings.API_V1_PREFIX}/machines", tags=["Machines"])
 app.include_router(work_orders.router, prefix=f"{settings.API_V1_PREFIX}/work-orders", tags=["Work Orders"])
 app.include_router(ai.router, prefix=f"{settings.API_V1_PREFIX}/ai", tags=["AI"])
 app.include_router(workflow_logs.router, prefix=f"{settings.API_V1_PREFIX}/workflow-logs", tags=["Workflow Logs"])
+app.include_router(workflow_webhooks.router, prefix=f"{settings.API_V1_PREFIX}/workflows", tags=["Workflow Webhooks"])
