@@ -11,6 +11,13 @@ from ..models.work_order import WorkOrder
 
 logger = logging.getLogger(__name__)
 
+# Brand strings for the email footers. Defined once rather than repeated in
+# each template. Non-ASCII is safe here: MIMEText detects it and falls back
+# from us-ascii to utf-8 automatically.
+APP_NAME = "AI Harvest®"
+APP_FULL_NAME = f"{APP_NAME} - WO Automation"
+EMAIL_FOOTER_NOTE = f"This is an automated message from {APP_FULL_NAME}."
+
 
 class NotificationService:
     """Service for sending email notifications"""
@@ -268,8 +275,8 @@ class NotificationService:
                 </div>
 
                 <div class="footer">
-                    <p>This is an automated message from the AI-Assisted Preventive Maintenance System.</p>
-                    <p>© {datetime.now().year} PM - AI-Assisted Demo System. All rights reserved.</p>
+                    <p>{EMAIL_FOOTER_NOTE}</p>
+                    <p>© {datetime.now().year} {APP_NAME}. All rights reserved.</p>
                 </div>
             </div>
         </body>
@@ -323,7 +330,7 @@ class NotificationService:
                 </div>
 
                 <div class="footer">
-                    <p>This is an automated message from the AI-Assisted Preventive Maintenance System.</p>
+                    <p>{EMAIL_FOOTER_NOTE}</p>
                 </div>
             </div>
         </body>
@@ -400,8 +407,8 @@ class NotificationService:
                 </div>
 
                 <div class="footer">
-                    <p>This is an automated message from the AI-Assisted Preventive Maintenance System.</p>
-                    <p>© {datetime.now().year} PM - AI-Assisted Demo System. All rights reserved.</p>
+                    <p>{EMAIL_FOOTER_NOTE}</p>
+                    <p>© {datetime.now().year} {APP_NAME}. All rights reserved.</p>
                 </div>
             </div>
         </body>

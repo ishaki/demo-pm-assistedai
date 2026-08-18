@@ -3,6 +3,35 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { ThemeToggle } from '../ui/ThemeToggle';
 
+/**
+ * Single source of truth for the brand, so the sidebar and the mobile header
+ * cannot drift apart. The browser tab title is static markup in
+ * public/index.html and has to be kept in step by hand.
+ */
+const APP_NAME = 'AI Harvest®';
+const APP_DESCRIPTOR = 'WO Automation';
+
+/**
+ * Stacked lockup: the full name is too long to sit on one line inside a 256px
+ * sidebar at a readable size, so the descriptor drops beneath the name as a
+ * tracked caption.
+ */
+const BrandLockup = () => (
+  <div className="flex items-center min-w-0">
+    <span className="material-icons-round text-primary text-3xl flex-shrink-0">
+      precision_manufacturing
+    </span>
+    <div className="ml-2 min-w-0">
+      <div className="text-[17px] font-semibold leading-tight text-content truncate">
+        {APP_NAME}
+      </div>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] leading-tight text-content-muted truncate">
+        {APP_DESCRIPTOR}
+      </div>
+    </div>
+  </div>
+);
+
 const Layout = ({ children }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,14 +61,12 @@ const Layout = ({ children }) => {
       `}>
         {/* Logo/Branding */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-line">
-          <div className="flex items-center">
-            <span className="material-icons-round text-primary text-3xl">precision_manufacturing</span>
-            <span className="ml-2 text-xl font-semibold text-content">InnoMaint</span>
-          </div>
+          <BrandLockup />
           {/* Mobile close button */}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-content-subtle hover:text-content"
+            className="lg:hidden ml-2 flex-shrink-0 text-content-subtle hover:text-content"
+            aria-label="Close navigation menu"
           >
             <span className="material-icons-round">close</span>
           </button>
@@ -66,28 +93,31 @@ const Layout = ({ children }) => {
           ))}
         </nav>
 
-        {/* Footer info */}
+        {/* Footer info. The descriptor is already in the lockup above, so this
+            stays short rather than repeating the full name. */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-line">
           <p className="text-xs text-content-subtle text-center">
-            AI-Assisted POC © {new Date().getFullYear()}
+            &copy; {new Date().getFullYear()} {APP_NAME}
           </p>
         </div>
       </aside>
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top bar. The brand and menu button are mobile-only — on desktop the
-            sidebar already shows both — leaving the bar to carry the theme
+        {/* Top bar. The brand and menu button are mobile-only -- on desktop the
+            sidebar already shows both -- leaving the bar to carry the theme
             toggle. No page title here: each page renders its own <h1>. */}
         <header className="h-16 flex-shrink-0 bg-raised border-b border-line flex items-center px-4 lg:px-6 shadow-card">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-content-subtle hover:text-content"
+            className="lg:hidden flex-shrink-0 text-content-subtle hover:text-content"
             aria-label="Open navigation menu"
           >
             <span className="material-icons-round">menu</span>
           </button>
-          <span className="lg:hidden ml-4 text-lg font-semibold text-content">InnoMaint</span>
+          <div className="lg:hidden ml-3 min-w-0">
+            <BrandLockup />
+          </div>
 
           <div className="ml-auto flex items-center">
             <ThemeToggle />

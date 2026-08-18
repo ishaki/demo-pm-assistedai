@@ -127,7 +127,7 @@ const MachineDashboard = () => {
     <div>
       {/* Page Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-content">Machine Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-content">Machine Dashboard</h1>
         <Button variant="outlined" startIcon="refresh" onClick={refetch}>
           Refresh
         </Button>
@@ -137,36 +137,36 @@ const MachineDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <Card className="bg-error-soft border-error-line">
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-error-on-soft">{summary.overdue}</div>
-            <div className="text-sm text-content mt-1 font-medium">Overdue</div>
+            <div className="text-[2.5rem] leading-none font-bold text-error-on-soft">{summary.overdue}</div>
+            <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-content-muted">Overdue</div>
           </CardContent>
         </Card>
 
         <Card className="bg-warning-soft border-warning-line">
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-warning-on-soft">{summary.due_soon}</div>
-            <div className="text-sm text-content mt-1 font-medium">Due Soon (≤30 days)</div>
+            <div className="text-[2.5rem] leading-none font-bold text-warning-on-soft">{summary.due_soon}</div>
+            <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-content-muted">Due Soon (≤30 days)</div>
           </CardContent>
         </Card>
 
         <Card className="bg-info-soft border-info-line">
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-info-on-soft">{summary.scheduled}</div>
-            <div className="text-sm text-content mt-1 font-medium">Scheduled</div>
+            <div className="text-[2.5rem] leading-none font-bold text-info-on-soft">{summary.scheduled}</div>
+            <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-content-muted">Scheduled</div>
           </CardContent>
         </Card>
 
         <Card className="bg-success-soft border-success-line">
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-success-on-soft">{summary.ok}</div>
-            <div className="text-sm text-content mt-1 font-medium">OK</div>
+            <div className="text-[2.5rem] leading-none font-bold text-success-on-soft">{summary.ok}</div>
+            <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-content-muted">OK</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-primary-on-soft">{summary.total}</div>
-            <div className="text-sm text-content mt-1 font-medium">Total Machines</div>
+            <div className="text-[2.5rem] leading-none font-bold text-primary-on-soft">{summary.total}</div>
+            <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-content-muted">Total Machines</div>
           </CardContent>
         </Card>
       </div>
@@ -243,7 +243,7 @@ const MachineDashboard = () => {
                     direction={order}
                     onClick={() => handleSort('pm_frequency')}
                   >
-                    PM Frequency
+                    Frequency
                   </TableSortLabel>
                 </TableCell>
                 <TableCell header>
@@ -252,7 +252,7 @@ const MachineDashboard = () => {
                     direction={order}
                     onClick={() => handleSort('next_pm_date')}
                   >
-                    Next PM Date
+                    Next PM
                   </TableSortLabel>
                 </TableCell>
                 <TableCell header align="right">
@@ -261,10 +261,10 @@ const MachineDashboard = () => {
                     direction={order}
                     onClick={() => handleSort('days_until_pm')}
                   >
-                    Days Until PM
+                    Days Left
                   </TableSortLabel>
                 </TableCell>
-                <TableCell header>PM Status</TableCell>
+                <TableCell header>Status</TableCell>
                 <TableCell header>Supplier</TableCell>
                 <TableCell header align="center">Actions</TableCell>
               </TableRow>
@@ -281,11 +281,15 @@ const MachineDashboard = () => {
                       {machine.machine_id}
                     </span>
                   </TableCell>
-                  <TableCell>{machine.name}</TableCell>
-                  <TableCell>{machine.location}</TableCell>
+                  <TableCell>
+                    <span className="block max-w-[150px] truncate" title={machine.name}>{machine.name}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="block max-w-[130px] truncate" title={machine.location}>{machine.location}</span>
+                  </TableCell>
                   <TableCell>{machine.pm_frequency}</TableCell>
-                  <TableCell>{formatDate(machine.next_pm_date)}</TableCell>
-                  <TableCell align="right">
+                  <TableCell className="whitespace-nowrap">{formatDate(machine.next_pm_date)}</TableCell>
+                  <TableCell align="right" className="whitespace-nowrap">
                     <span className={`font-${machine.days_until_pm < 0 ? 'bold' : 'normal'} ${machine.days_until_pm < 0 ? 'text-error-on-soft' : 'text-content'}`}>
                       {formatDaysUntilPM(machine.days_until_pm)}
                     </span>
@@ -296,7 +300,7 @@ const MachineDashboard = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm text-content-muted truncate">
+                    <span className="block max-w-[120px] truncate text-sm text-content-muted" title={machine.assigned_supplier || '-'}>
                       {machine.assigned_supplier || '-'}
                     </span>
                   </TableCell>

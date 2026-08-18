@@ -44,8 +44,10 @@ export const TableCell = ({ children, header = false, align = 'left', className 
   return (
     <Component
       className={clsx(
-        'px-6 py-4',
-        header ? 'text-xs font-semibold text-content-muted uppercase tracking-wider' : 'text-sm text-content',
+        'px-3',
+        header
+          ? 'py-3 text-xs font-semibold text-content-muted uppercase tracking-[0.03em] whitespace-nowrap'
+          : 'py-3.5 text-sm text-content tabular-nums',
         alignClasses[align],
         className
       )}
@@ -85,7 +87,7 @@ export const TablePagination = ({
   const endIndex = Math.min((page + 1) * rowsPerPage, count);
 
   return (
-    <div className="px-6 py-4 flex items-center justify-between border-t border-line bg-surface">
+    <div className="px-4 py-3 flex items-center justify-between border-t border-line bg-surface">
       <div className="flex items-center gap-4">
         <span className="text-sm text-content-muted">Rows per page:</span>
         <select

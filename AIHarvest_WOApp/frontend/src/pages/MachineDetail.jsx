@@ -108,7 +108,7 @@ const MachineDetail = () => {
               BACK TO LIST
             </button>
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold text-content">{machine.machine_id}</h1>
+              <h1 className="text-2xl font-semibold text-content">{machine.machine_id}</h1>
               <Badge variant={getPMStatusVariant(machine.pm_status)}>
                 {getPMStatusLabel(machine.pm_status)}
               </Badge>
@@ -191,7 +191,7 @@ const MachineDetail = () => {
                 <p className="text-base font-medium text-content">{formatDate(machine.next_pm_date)}</p>
               </div>
               <div className="md:col-span-2 mt-2">
-                <div className="bg-info-soft rounded-lg p-4 border border-info-line flex items-center justify-between">
+                <div className="-mx-6 px-6 py-4 bg-info-soft border-y border-info-line flex items-center justify-between">
                   <div>
                     <label className="block text-xs font-medium text-info-on-soft uppercase tracking-wider">Days Until PM</label>
                     <p className="text-3xl font-bold text-primary-on-soft">{formatDaysUntilPM(machine.days_until_pm)}</p>

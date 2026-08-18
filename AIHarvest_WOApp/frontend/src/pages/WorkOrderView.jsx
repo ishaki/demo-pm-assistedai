@@ -415,7 +415,7 @@ const WorkOrderView = () => {
     <div>
       {/* Page Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-content">Work Orders</h1>
+        <h1 className="text-2xl font-semibold text-content">Work Orders</h1>
         <Button variant="outlined" startIcon="refresh" onClick={refetch}>
           Refresh
         </Button>
@@ -530,7 +530,8 @@ const WorkOrderView = () => {
                   <TableCell>
                     <button
                       onClick={() => navigate(`/machines/${wo.machine_id}`)}
-                      className="text-primary-on-soft hover:underline font-medium"
+                      className="block max-w-[180px] truncate text-left text-primary-on-soft hover:underline font-medium"
+                      title={wo.machine_name || `Machine #${wo.machine_id}`}
                     >
                       {wo.machine_name || `Machine #${wo.machine_id}`}
                     </button>
@@ -552,9 +553,9 @@ const WorkOrderView = () => {
                     )}
                   </TableCell>
 
-                  <TableCell>{formatDateTime(wo.created_at)}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDateTime(wo.created_at)}</TableCell>
 
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {wo.scheduled_date ? formatDateTime(wo.scheduled_date) : 'Not scheduled'}
                   </TableCell>
 
