@@ -13,7 +13,7 @@ import { useToast } from '../components/ui/Toast';
 import useWorkOrders from '../hooks/useWorkOrders';
 import workOrderService from '../services/workOrderService';
 import machineService from '../services/machineService';
-import { formatDateTime, formatDate } from '../utils/dateUtils';
+import { formatDateTime, formatDate, hasDateArrived } from '../utils/dateUtils';
 import {
   getWorkOrderStatusLabel,
   getWorkOrderStatusVariant,
@@ -571,8 +571,12 @@ const WorkOrderView = () => {
                         </button>
                       )}
 
-                      {/* Complete Button */}
-                      {wo.status === 'Approved' && wo.scheduled_date && (
+                      {/* Complete Button. Withheld until the scheduled date
+                          arrives -- handleCompleteWorkOrder rejects a
+                          completion dated before it, so offering the action
+                          earlier only leads to a dialog that cannot be
+                          submitted. */}
+                      {wo.status === 'Approved' && hasDateArrived(wo.scheduled_date) && (
                         <button
                           onClick={() => handleOpenCompleteDialog(wo)}
                           className="p-2 rounded-full text-primary-on-soft hover:bg-primary-soft transition-colors"

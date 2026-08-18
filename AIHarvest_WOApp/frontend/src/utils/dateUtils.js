@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { format, formatDistanceToNow, isAfter, parseISO, startOfDay } from 'date-fns';
 
 /**
  * Format date to readable string
@@ -81,4 +81,23 @@ export const formatDaysUntilPM = (daysUntilPM) => {
     return 'Due today';
   }
   return `${daysUntilPM} days`;
+};
+
+/**
+ * Has a scheduled date arrived yet (is it today or earlier)?
+ *
+ * Compares whole days, so something scheduled for today counts as arrived
+ * regardless of the time. Returns false for a missing or unparseable date:
+ * callers use this to gate an action, and withholding one is safer than
+ * offering an action that downstream validation will reject anyway.
+ */
+export const hasDateArrived = (dateString) => {
+  if (!dateString) return false;
+  try {
+    const date = typeof dateString === 'string' ? parseISO(dateString) : dateString;
+    return !isAfter(startOfDay(date), startOfDay(new Date()));
+  } catch (error) {
+    console.error('Error comparing date:', error);
+    return false;
+  }
 };
