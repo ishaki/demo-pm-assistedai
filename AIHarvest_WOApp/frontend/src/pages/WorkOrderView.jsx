@@ -758,9 +758,7 @@ const WorkOrderView = () => {
                 disabled={loadingMachine || updatingSchedule}
                 required
                 helperText="Select today or a future date"
-                inputProps={{
-                  min: new Date().toISOString().split('T')[0],
-                }}
+                min={new Date().toISOString().split('T')[0]}
               />
 
               {/* Loading state */}
@@ -843,10 +841,8 @@ const WorkOrderView = () => {
                 disabled={completingWorkOrder}
                 required
                 helperText="Select the date when work was completed"
-                inputProps={{
-                  min: selectedWOForComplete.scheduled_date || undefined,
-                  max: new Date().toISOString().split('T')[0],
-                }}
+                min={selectedWOForComplete.scheduled_date || undefined}
+                max={new Date().toISOString().split('T')[0]}
               />
             </div>
           )}
