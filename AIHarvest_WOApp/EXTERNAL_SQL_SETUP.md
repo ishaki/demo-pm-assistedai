@@ -46,7 +46,7 @@ New-NetFirewallRule -DisplayName "SQL Server" -Direction Inbound -Protocol TCP -
 1. **Create Azure SQL Database:**
    - Go to [Azure Portal](https://portal.azure.com)
    - Create new **SQL Database**
-   - Database name: `dyson_pm`
+   - Database name: `aiharvest_pm`
    - Choose pricing tier (Basic tier is sufficient for POC)
    - Note the **Server name** (e.g., `yourserver.database.windows.net`)
 
@@ -68,13 +68,13 @@ Connect to SQL Server and create the database:
 
 1. Connect to your SQL Server instance
 2. Right-click **Databases** → **New Database...**
-3. Database name: `dyson_pm`
+3. Database name: `aiharvest_pm`
 4. Click **OK**
 
 **Using sqlcmd:**
 
 ```bash
-sqlcmd -S YOUR_SERVER_HOST -U sa -P 'YourPassword' -Q "CREATE DATABASE dyson_pm"
+sqlcmd -S YOUR_SERVER_HOST -U sa -P 'YourPassword' -Q "CREATE DATABASE aiharvest_pm"
 ```
 
 **Using Azure Data Studio:**
@@ -83,7 +83,7 @@ sqlcmd -S YOUR_SERVER_HOST -U sa -P 'YourPassword' -Q "CREATE DATABASE dyson_pm"
 2. Right-click server → **New Query**
 3. Execute:
 ```sql
-CREATE DATABASE dyson_pm;
+CREATE DATABASE aiharvest_pm;
 GO
 ```
 
@@ -100,27 +100,27 @@ mssql+pyodbc://USERNAME:PASSWORD@HOST:PORT/DATABASE?driver=ODBC+Driver+18+for+SQ
 
 **Local SQL Server (Windows Authentication not supported - use SQL Auth):**
 ```
-mssql+pyodbc://sa:YourPassword@localhost:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+mssql+pyodbc://sa:YourPassword@localhost:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 ```
 
 **Local SQL Server (by IP):**
 ```
-mssql+pyodbc://sa:YourPassword@192.168.1.100:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+mssql+pyodbc://sa:YourPassword@192.168.1.100:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 ```
 
 **Local SQL Server (by hostname):**
 ```
-mssql+pyodbc://sa:YourPassword@sqlserver.company.local:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+mssql+pyodbc://sa:YourPassword@sqlserver.company.local:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 ```
 
 **Azure SQL Database:**
 ```
-mssql+pyodbc://username@yourserver:password@yourserver.database.windows.net:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes
+mssql+pyodbc://username@yourserver:password@yourserver.database.windows.net:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes
 ```
 
 **Named Instance:**
 ```
-mssql+pyodbc://sa:YourPassword@localhost\\INSTANCENAME:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+mssql+pyodbc://sa:YourPassword@localhost\\INSTANCENAME:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 ```
 
 #### Update .env File
@@ -128,7 +128,7 @@ mssql+pyodbc://sa:YourPassword@localhost\\INSTANCENAME:1433/dyson_pm?driver=ODBC
 Edit `backend/.env`:
 
 ```env
-DATABASE_URL=mssql+pyodbc://sa:YourPassword@YOUR_HOST:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+DATABASE_URL=mssql+pyodbc://sa:YourPassword@YOUR_HOST:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 ```
 
 **Important Parameters:**
@@ -153,7 +153,7 @@ sqlcmd -S YOUR_HOST -U sa -P 'YourPassword' -Q "SELECT @@VERSION"
 
 Start only the backend service:
 ```bash
-cd Dyson_WOApp
+cd AIHarvest_WOApp
 docker-compose up -d backend
 ```
 
@@ -183,7 +183,7 @@ Tables created: machines, maintenance_history, work_orders, ai_decisions, workfl
 Connect to SQL Server and verify:
 
 ```sql
-USE dyson_pm;
+USE aiharvest_pm;
 GO
 
 -- List all tables
@@ -226,13 +226,13 @@ GO
 3. Ensure user exists and has permissions:
    ```sql
    -- Create new user if needed
-   CREATE LOGIN dyson_user WITH PASSWORD = 'StrongPassword123!';
+   CREATE LOGIN aiharvest_user WITH PASSWORD = 'StrongPassword123!';
    GO
-   USE dyson_pm;
+   USE aiharvest_pm;
    GO
-   CREATE USER dyson_user FOR LOGIN dyson_user;
+   CREATE USER aiharvest_user FOR LOGIN aiharvest_user;
    GO
-   ALTER ROLE db_owner ADD MEMBER dyson_user;
+   ALTER ROLE db_owner ADD MEMBER aiharvest_user;
    GO
    ```
 
@@ -252,7 +252,7 @@ GO
 1. Ensure SQL Server Browser service is running
 2. Use port number instead of instance name:
    ```
-   mssql+pyodbc://sa:Pass@hostname:1435/dyson_pm?driver=...
+   mssql+pyodbc://sa:Pass@hostname:1435/aiharvest_pm?driver=...
    ```
 3. Find instance port:
    ```sql
@@ -281,7 +281,7 @@ GO
 
    In `.env`:
    ```env
-   DATABASE_URL=mssql+pyodbc://sa:Pass@host.docker.internal:1433/dyson_pm?driver=...
+   DATABASE_URL=mssql+pyodbc://sa:Pass@host.docker.internal:1433/aiharvest_pm?driver=...
    ```
 
 3. **Use Docker host IP**:
@@ -293,7 +293,7 @@ GO
 
    Use that IP in connection string:
    ```env
-   DATABASE_URL=mssql+pyodbc://sa:Pass@192.168.1.100:1433/dyson_pm?driver=...
+   DATABASE_URL=mssql+pyodbc://sa:Pass@192.168.1.100:1433/aiharvest_pm?driver=...
    ```
 
 ### Azure SQL Specific Issues
@@ -310,7 +310,7 @@ GO
 **Solution:**
 - Azure SQL requires Encrypt=yes:
   ```
-  DATABASE_URL=mssql+pyodbc://user@server:pass@server.database.windows.net:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes
+  DATABASE_URL=mssql+pyodbc://user@server:pass@server.database.windows.net:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes
   ```
 
 ## Connection String Reference
@@ -329,22 +329,22 @@ GO
 
 **Development (local, self-signed cert):**
 ```
-mssql+pyodbc://sa:Password@localhost:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+mssql+pyodbc://sa:Password@localhost:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 ```
 
 **Production (valid SSL cert):**
 ```
-mssql+pyodbc://sa:Password@sqlserver.company.com:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes
+mssql+pyodbc://sa:Password@sqlserver.company.com:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes
 ```
 
 **Azure SQL:**
 ```
-mssql+pyodbc://admin@myserver:SecurePass123@myserver.database.windows.net:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes
+mssql+pyodbc://admin@myserver:SecurePass123@myserver.database.windows.net:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes
 ```
 
 **With connection pooling:**
 ```
-mssql+pyodbc://sa:Password@localhost:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes&pool_size=10&max_overflow=20
+mssql+pyodbc://sa:Password@localhost:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes&pool_size=10&max_overflow=20
 ```
 
 ## Security Best Practices
@@ -355,28 +355,28 @@ Don't use `sa` in production. Create dedicated account:
 
 ```sql
 -- Create login for application
-CREATE LOGIN dyson_pm_app WITH PASSWORD = 'SecureRandomPassword123!';
+CREATE LOGIN aiharvest_pm_app WITH PASSWORD = 'SecureRandomPassword123!';
 GO
 
 -- Create user in database
-USE dyson_pm;
+USE aiharvest_pm;
 GO
-CREATE USER dyson_pm_app FOR LOGIN dyson_pm_app;
+CREATE USER aiharvest_pm_app FOR LOGIN aiharvest_pm_app;
 GO
 
 -- Grant minimal permissions
-ALTER ROLE db_datareader ADD MEMBER dyson_pm_app;  -- Read data
-ALTER ROLE db_datawriter ADD MEMBER dyson_pm_app;  -- Write data
+ALTER ROLE db_datareader ADD MEMBER aiharvest_pm_app;  -- Read data
+ALTER ROLE db_datawriter ADD MEMBER aiharvest_pm_app;  -- Write data
 GO
 
 -- Grant execute on stored procedures (if any)
-GRANT EXECUTE TO dyson_pm_app;
+GRANT EXECUTE TO aiharvest_pm_app;
 GO
 ```
 
 Update connection string:
 ```
-mssql+pyodbc://dyson_pm_app:SecureRandomPassword123@...
+mssql+pyodbc://aiharvest_pm_app:SecureRandomPassword123@...
 ```
 
 ### 2. Use Secrets Management
@@ -419,8 +419,8 @@ Schedule automated backups:
 
 ```sql
 -- Create backup job
-BACKUP DATABASE dyson_pm
-TO DISK = 'C:\Backups\dyson_pm_FULL.bak'
+BACKUP DATABASE aiharvest_pm
+TO DISK = 'C:\Backups\aiharvest_pm_FULL.bak'
 WITH INIT, COMPRESSION;
 ```
 
@@ -462,7 +462,7 @@ SELECT
     status,
     last_request_end_time
 FROM sys.dm_exec_sessions
-WHERE database_id = DB_ID('dyson_pm');
+WHERE database_id = DB_ID('aiharvest_pm');
 ```
 
 ## Additional Resources

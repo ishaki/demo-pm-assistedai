@@ -69,7 +69,7 @@ Docker Environment                     External Services
 
 - **MS SQL Server** instance (local or remote)
   - SQL Server 2017 or later / Azure SQL Database
-  - Database created: `dyson_pm`
+  - Database created: `aiharvest_pm`
   - Network access from Docker host
   - Credentials with CREATE TABLE permissions
 - **Docker Desktop** 20.10+ (with Docker Compose)
@@ -88,11 +88,11 @@ Choose your preferred installation method:
 
 **Best for:** Local development, testing, or if you have Docker issues
 
-📖 **[Follow the Local Installation Guide](Dyson_WOApp/LOCAL_INSTALLATION_GUIDE.md)** - Complete step-by-step instructions for running without Docker.
+📖 **[Follow the Local Installation Guide](AIHarvest_WOApp/LOCAL_INSTALLATION_GUIDE.md)** - Complete step-by-step instructions for running without Docker.
 
 **Quick setup:**
 ```bash
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp
 setup_local.bat
 ```
 
@@ -113,7 +113,7 @@ Continue with the Quick Start guide below.
 
 ### 1. Prepare SQL Server Database
 
-You need an external MS SQL Server instance. See **[EXTERNAL_SQL_SETUP.md](Dyson_WOApp/EXTERNAL_SQL_SETUP.md)** for detailed setup instructions.
+You need an external MS SQL Server instance. See **[EXTERNAL_SQL_SETUP.md](AIHarvest_WOApp/EXTERNAL_SQL_SETUP.md)** for detailed setup instructions.
 
 **Quick Setup:**
 
@@ -123,18 +123,18 @@ Connect to your SQL Server and create the database:
 
 ```sql
 -- Connect via SSMS, Azure Data Studio, or sqlcmd
-CREATE DATABASE dyson_pm;
+CREATE DATABASE aiharvest_pm;
 GO
 ```
 
 **Option B: Using Azure SQL Database**
 
 1. Create Azure SQL Database via Azure Portal
-2. Database name: `dyson_pm`
+2. Database name: `aiharvest_pm`
 3. Note the connection string
 4. Update firewall rules to allow Docker host IP
 
-> 📖 **Need help?** See the comprehensive [External SQL Server Setup Guide](Dyson_WOApp/EXTERNAL_SQL_SETUP.md) for:
+> 📖 **Need help?** See the comprehensive [External SQL Server Setup Guide](AIHarvest_WOApp/EXTERNAL_SQL_SETUP.md) for:
 > - Enabling TCP/IP and SQL Authentication
 > - Firewall configuration
 > - Connection string examples
@@ -143,15 +143,15 @@ GO
 ### 2. Clone and Navigate
 
 ```bash
-cd E:\RepoInno\Dyson_WODemo
+cd E:\RepoInno\AIHarvest_WODemo
 ```
 
 ### 3. Configure Environment Variables
 
-Create `.env` file in `Dyson_WOApp/backend/`:
+Create `.env` file in `AIHarvest_WOApp/backend/`:
 
 ```bash
-cd Dyson_WOApp/backend
+cd AIHarvest_WOApp/backend
 cp .env.example .env
 ```
 
@@ -164,7 +164,7 @@ Edit `.env` with your settings:
 #   - IP address: 192.168.1.100
 #   - Hostname: sqlserver.company.local
 #   - Azure SQL: yourserver.database.windows.net
-DATABASE_URL=mssql+pyodbc://sa:YourStrong!Passw0rd@YOUR_SQL_SERVER_HOST:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+DATABASE_URL=mssql+pyodbc://sa:YourStrong!Passw0rd@YOUR_SQL_SERVER_HOST:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 
 # LLM Provider Configuration (choose one)
 LLM_PROVIDER=openai  # Options: openai, claude, gemini
@@ -205,10 +205,10 @@ DEBUG=True
 
 ### 4. Start All Services
 
-From the `Dyson_WOApp` directory:
+From the `AIHarvest_WOApp` directory:
 
 ```bash
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp
 docker-compose up -d
 ```
 
@@ -268,7 +268,7 @@ Navigate to http://localhost:5678 and login:
 
 1. Click **"Workflows"** in the left sidebar
 2. Click **"Import from File"**
-3. Select `E:\RepoInno\Dyson_WODemo\Dyson_Workflow\workflows\daily_pm_checker.json`
+3. Select `E:\RepoInno\AIHarvest_WODemo\AIHarvest_Workflow\workflows\daily_pm_checker.json`
 4. Click **"Import"**
 
 ### 3. Configure Workflow
@@ -326,7 +326,7 @@ View recent AI decisions and audit trail:
 curl http://localhost:8000/api/v1/ai/decisions/recent?limit=10
 
 # Or check database
-docker-compose exec mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourStrong@Passw0rd' -d dyson_pm -Q "SELECT TOP 10 * FROM ai_decisions ORDER BY created_at DESC"
+docker-compose exec mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourStrong@Passw0rd' -d aiharvest_pm -Q "SELECT TOP 10 * FROM ai_decisions ORDER BY created_at DESC"
 ```
 
 ## API Endpoints
@@ -355,7 +355,7 @@ Full API documentation: http://localhost:8000/docs
 
 ### Changing LLM Provider
 
-Edit `Dyson_WOApp/backend/.env`:
+Edit `AIHarvest_WOApp/backend/.env`:
 
 ```env
 # Switch to Claude
@@ -374,7 +374,7 @@ docker-compose restart backend
 
 ### Adjusting Confidence Threshold
 
-Edit `Dyson_WOApp/backend/.env`:
+Edit `AIHarvest_WOApp/backend/.env`:
 
 ```env
 # Require 80% confidence for auto-execution
@@ -407,7 +407,7 @@ docker-compose exec backend python -c "from app.database import engine; print(en
 # 1. SQL Server firewall blocking connections
 # 2. SQL Server not configured for TCP/IP connections
 # 3. Wrong credentials in DATABASE_URL
-# 4. Database 'dyson_pm' doesn't exist
+# 4. Database 'aiharvest_pm' doesn't exist
 # 5. SQL Server browser service not running (for named instances)
 ```
 
@@ -484,7 +484,7 @@ Port: 1433
 Authentication: SQL Server Authentication
 Login: sa (or your username)
 Password: (your password)
-Database: dyson_pm
+Database: aiharvest_pm
 ```
 
 **Using Azure Data Studio:**
@@ -494,26 +494,26 @@ Server: YOUR_SQL_SERVER_HOST
 Authentication type: SQL Login
 User name: sa (or your username)
 Password: (your password)
-Database: dyson_pm
+Database: aiharvest_pm
 ```
 
 **Using sqlcmd (command line):**
 ```bash
-sqlcmd -S YOUR_SQL_SERVER_HOST -U sa -P 'YourPassword' -d dyson_pm
+sqlcmd -S YOUR_SQL_SERVER_HOST -U sa -P 'YourPassword' -d aiharvest_pm
 ```
 
 ### Backup Database
 
 **Using SSMS:**
-1. Right-click `dyson_pm` database
+1. Right-click `aiharvest_pm` database
 2. Tasks → Back Up...
 3. Select backup destination
 4. Click OK
 
 **Using T-SQL:**
 ```sql
-BACKUP DATABASE dyson_pm
-TO DISK = 'C:\Backups\dyson_pm.bak'
+BACKUP DATABASE aiharvest_pm
+TO DISK = 'C:\Backups\aiharvest_pm.bak'
 WITH FORMAT, INIT, NAME = 'PM - AI-Assisted Demo Full Backup';
 ```
 
@@ -527,10 +527,10 @@ USE master;
 GO
 
 -- Drop and recreate database
-DROP DATABASE IF EXISTS dyson_pm;
+DROP DATABASE IF EXISTS aiharvest_pm;
 GO
 
-CREATE DATABASE dyson_pm;
+CREATE DATABASE aiharvest_pm;
 GO
 ```
 
@@ -548,7 +548,7 @@ docker-compose exec backend python -m app.scripts.seed_data
 ### Running Backend Locally
 
 ```bash
-cd Dyson_WOApp/backend
+cd AIHarvest_WOApp/backend
 
 # Create virtual environment
 python -m venv venv
@@ -564,7 +564,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ### Running Frontend Locally
 
 ```bash
-cd Dyson_WOApp/frontend
+cd AIHarvest_WOApp/frontend
 
 # Install dependencies
 npm install
@@ -586,10 +586,10 @@ docker-compose exec frontend npm test
 ## Project Structure
 
 ```
-Dyson_WODemo/
+AIHarvest_WODemo/
 ├── Docs/
 │   └── prd_ai_assisted_preventive_maintenance_poc.md
-├── Dyson_WOApp/
+├── AIHarvest_WOApp/
 │   ├── backend/
 │   │   ├── app/
 │   │   │   ├── models/              # SQLAlchemy ORM models
@@ -627,7 +627,7 @@ Dyson_WODemo/
 │   │   ├── nginx.conf
 │   │   └── package.json
 │   └── docker-compose.yml
-├── Dyson_Workflow/
+├── AIHarvest_Workflow/
 │   ├── workflows/
 │   │   └── daily_pm_checker.json
 │   └── README.md

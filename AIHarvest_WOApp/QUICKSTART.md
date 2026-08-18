@@ -1,15 +1,15 @@
-# Quick Start - Dyson PM System Deployment
+# Quick Start - AIHarvest PM System Deployment
 
 ## First Time Setup (5 minutes)
 
 ### 1. Copy files to server
 ```bash
-scp -r Dyson_WOApp user@test-server:/home/user/
+scp -r AIHarvest_WOApp user@test-server:/home/user/
 ```
 
 ### 2. Configure environment
 ```bash
-cd ~/Dyson_WOApp
+cd ~/AIHarvest_WOApp
 cp .env.production.example .env
 nano .env  # Update with your values
 ```
@@ -96,7 +96,7 @@ docker-compose -f docker-compose.prod.yml up -d frontend
 ### Database connection failed
 ```bash
 # Test database connection
-docker exec -it dyson_backend_prod python -c "from app.database import check_db_connection; print(check_db_connection())"
+docker exec -it aiharvest_backend_prod python -c "from app.database import check_db_connection; print(check_db_connection())"
 ```
 
 ### View detailed logs

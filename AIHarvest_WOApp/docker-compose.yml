@@ -4,7 +4,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: dyson_backend
+    container_name: aiharvest_backend
     ports:
       - "8000:8000"
     environment:
@@ -31,7 +31,7 @@ services:
   # React Frontend
   frontend:
     image: node:18-alpine
-    container_name: dyson_frontend
+    container_name: aiharvest_frontend
     working_dir: /app
     ports:
       - "3000:3000"
@@ -52,7 +52,7 @@ services:
   # n8n Workflow Automation
   n8n:
     image: n8nio/n8n:latest
-    container_name: dyson_n8n
+    container_name: aiharvest_n8n
     ports:
       - "5678:5678"
     environment:
@@ -66,7 +66,7 @@ services:
       - GENERIC_TIMEZONE=America/New_York
     volumes:
       - n8n_data:/home/node/.n8n
-      - ../Dyson_Workflow/workflows:/home/node/.n8n/workflows
+      - ../AIHarvest_Workflow/workflows:/home/node/.n8n/workflows
     networks:
       - agenticai-demo-network
     depends_on:

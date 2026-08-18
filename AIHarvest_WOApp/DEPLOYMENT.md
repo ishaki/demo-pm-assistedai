@@ -1,6 +1,6 @@
-# Deployment Guide - Dyson PM System
+# Deployment Guide - AIHarvest PM System
 
-This guide explains how to deploy the Dyson AI-Assisted Preventive Maintenance system to a test server using Docker.
+This guide explains how to deploy the AIHarvest AI-Assisted Preventive Maintenance system to a test server using Docker.
 
 ## Prerequisites
 
@@ -46,19 +46,19 @@ docker-compose --version
 ```bash
 # On test server
 git clone <your-repository-url>
-cd Dyson_WODemo/Dyson_WOApp
+cd AIHarvest_WODemo/AIHarvest_WOApp
 ```
 
 **Option B: Using SCP**
 ```bash
 # On your local machine
-scp -r E:\RepoInno\Dyson_WODemo\Dyson_WOApp user@test-server-ip:/home/user/
+scp -r E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp user@test-server-ip:/home/user/
 ```
 
 **Option C: Using rsync**
 ```bash
 # On your local machine
-rsync -avz --exclude 'node_modules' --exclude '__pycache__' E:\RepoInno\Dyson_WODemo\Dyson_WOApp/ user@test-server-ip:/home/user/dyson-app/
+rsync -avz --exclude 'node_modules' --exclude '__pycache__' E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp/ user@test-server-ip:/home/user/aiharvest-app/
 ```
 
 ---
@@ -67,7 +67,7 @@ rsync -avz --exclude 'node_modules' --exclude '__pycache__' E:\RepoInno\Dyson_WO
 
 ```bash
 # On test server, navigate to app directory
-cd ~/dyson-app  # or wherever you copied the files
+cd ~/aiharvest-app  # or wherever you copied the files
 
 # Copy the example environment file
 cp .env.production.example .env
@@ -86,7 +86,7 @@ nano .env
 
 **Example for test server at 192.168.1.100:**
 ```env
-DATABASE_URL=mssql+pyodbc://sa:YourPassword@192.168.1.50:1433/DysonPM?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+DATABASE_URL=mssql+pyodbc://sa:YourPassword@192.168.1.50:1433/AIHarvestPM?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 REACT_APP_API_URL=http://192.168.1.100:8000/api/v1
 CORS_ORIGINS=http://192.168.1.100:3000,http://localhost:3000
 ```
@@ -112,9 +112,9 @@ docker-compose -f docker-compose.prod.yml logs -f
 **Expected output:**
 ```
 NAME                    STATUS              PORTS
-dyson_backend_prod      Up (healthy)        0.0.0.0:8000->8000/tcp
-dyson_frontend_prod     Up (healthy)        0.0.0.0:3000->80/tcp
-dyson_n8n_prod          Up                  0.0.0.0:5678->5678/tcp
+aiharvest_backend_prod      Up (healthy)        0.0.0.0:8000->8000/tcp
+aiharvest_frontend_prod     Up (healthy)        0.0.0.0:3000->80/tcp
+aiharvest_n8n_prod          Up                  0.0.0.0:5678->5678/tcp
 ```
 
 ---
@@ -126,17 +126,17 @@ dyson_n8n_prod          Up                  0.0.0.0:5678->5678/tcp
 curl http://localhost:8000/health
 
 # Expected response:
-# {"status":"healthy","app_name":"Dyson PM System","version":"1.0.0",...}
+# {"status":"healthy","app_name":"AIHarvest PM System","version":"1.0.0",...}
 ```
 
 **2. Check Frontend:**
 - Open browser: `http://your-test-server-ip:3000`
-- You should see the Dyson PM login/dashboard
+- You should see the AIHarvest PM login/dashboard
 
 **3. Check n8n:**
 - Open browser: `http://your-test-server-ip:5678`
 - Login with credentials from .env file
-- Import workflows from `../Dyson_Workflow/workflows/`
+- Import workflows from `../AIHarvest_Workflow/workflows/`
 
 **4. Check Container Logs:**
 ```bash
@@ -165,7 +165,7 @@ docker-compose -f docker-compose.prod.yml logs backend | grep "Database initiali
 If tables are not created, you can manually run:
 ```bash
 # Access backend container
-docker exec -it dyson_backend_prod bash
+docker exec -it aiharvest_backend_prod bash
 
 # Inside container
 python -c "from app.database import init_db; init_db()"
@@ -252,10 +252,10 @@ docker system df
 ### Backup n8n Data
 ```bash
 # Backup n8n workflows and settings
-docker run --rm -v dyson_woapp_n8n_data:/data -v $(pwd):/backup alpine tar czf /backup/n8n-backup-$(date +%Y%m%d).tar.gz /data
+docker run --rm -v aiharvest_woapp_n8n_data:/data -v $(pwd):/backup alpine tar czf /backup/n8n-backup-$(date +%Y%m%d).tar.gz /data
 
 # Restore n8n data
-docker run --rm -v dyson_woapp_n8n_data:/data -v $(pwd):/backup alpine tar xzf /backup/n8n-backup-YYYYMMDD.tar.gz -C /
+docker run --rm -v aiharvest_woapp_n8n_data:/data -v $(pwd):/backup alpine tar xzf /backup/n8n-backup-YYYYMMDD.tar.gz -C /
 ```
 
 ---
@@ -285,7 +285,7 @@ docker-compose -f docker-compose.prod.yml up -d frontend
 ### Database Connection Issues
 ```bash
 # Test database connectivity from backend container
-docker exec -it dyson_backend_prod bash
+docker exec -it aiharvest_backend_prod bash
 python -c "from app.database import check_db_connection; print(check_db_connection())"
 
 # Should print: True
@@ -310,7 +310,7 @@ docker-compose -f docker-compose.prod.yml up -d
 Instead of exposing ports directly, use Nginx as reverse proxy:
 
 ```nginx
-# /etc/nginx/sites-available/dyson-pm
+# /etc/nginx/sites-available/aiharvest-pm
 server {
     listen 80;
     server_name your-domain.com;
@@ -358,7 +358,7 @@ Create a cron job for daily backups:
 crontab -e
 
 # Add daily backup at 2 AM
-0 2 * * * cd /home/user/dyson-app && docker run --rm -v dyson_woapp_n8n_data:/data -v /home/user/backups:/backup alpine tar czf /backup/n8n-$(date +\%Y\%m\%d).tar.gz /data
+0 2 * * * cd /home/user/aiharvest-app && docker run --rm -v aiharvest_woapp_n8n_data:/data -v /home/user/backups:/backup alpine tar czf /backup/n8n-$(date +\%Y\%m\%d).tar.gz /data
 ```
 
 ---

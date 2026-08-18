@@ -10,7 +10,7 @@ echo Prerequisites:
 echo  - Python 3.12+ installed
 echo  - Node.js 18+ installed
 echo  - ODBC Driver 18 for SQL Server installed
-echo  - SQL Server accessible with 'dyson_pm' database created
+echo  - SQL Server accessible with 'aiharvest_pm' database created
 echo.
 pause
 

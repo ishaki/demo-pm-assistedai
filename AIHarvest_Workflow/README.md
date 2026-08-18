@@ -124,14 +124,14 @@ LIMIT 10;
 
 3. **Check n8n logs:**
    ```bash
-   docker logs dyson_n8n
+   docker logs aiharvest_n8n
    ```
 
 ### API Connection Errors
 
 1. **Verify backend is running:**
    ```bash
-   docker ps | grep dyson_backend
+   docker ps | grep aiharvest_backend
    ```
 
 2. **Check network connectivity:**

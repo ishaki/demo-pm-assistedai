@@ -119,7 +119,7 @@ dmypy.json
 .pytype/
 
 # n8n
-Dyson_Workflow/n8n_data/
+AIHarvest_Workflow/n8n_data/
 
 # Logs
 logs/

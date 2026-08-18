@@ -55,7 +55,7 @@ You should see "ODBC Driver 18 for SQL Server" in the list.
 
 Ensure you have:
 - SQL Server instance accessible from your machine
-- Database `dyson_pm` created
+- Database `aiharvest_pm` created
 - Credentials with CREATE TABLE permissions
 
 ## Backend Setup
@@ -63,7 +63,7 @@ Ensure you have:
 ### Step 1: Navigate to Backend Directory
 
 ```bash
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp\backend
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp\backend
 ```
 
 ### Step 2: Create Virtual Environment
@@ -150,7 +150,7 @@ DEBUG=True
 #   192.168.1.100:1433
 #   sqlserver.company.local:1433
 #   yourserver.database.windows.net:1433 (Azure SQL)
-DATABASE_URL=mssql+pyodbc://sa:YourPassword@localhost:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+DATABASE_URL=mssql+pyodbc://sa:YourPassword@localhost:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 
 # LLM Provider Configuration
 LLM_PROVIDER=openai
@@ -257,7 +257,7 @@ Keep the backend terminal running and open a new terminal window.
 ### Step 2: Navigate to Frontend Directory
 
 ```bash
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp\frontend
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp\frontend
 ```
 
 ### Step 3: Install Dependencies
@@ -385,14 +385,14 @@ You need **two terminals** running simultaneously:
 
 **Terminal 1 (Backend):**
 ```bash
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp\backend
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp\backend
 venv\Scripts\activate
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Terminal 2 (Frontend):**
 ```bash
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp\frontend
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp\frontend
 npm start
 ```
 
@@ -414,7 +414,7 @@ If you want to run the automated daily PM checker workflow:
 docker run -d \
   --name n8n \
   -p 5678:5678 \
-  -v E:\RepoInno\Dyson_WODemo\Dyson_Workflow\workflows:/home/node/.n8n/workflows \
+  -v E:\RepoInno\AIHarvest_WODemo\AIHarvest_Workflow\workflows:/home/node/.n8n/workflows \
   -e N8N_BASIC_AUTH_ACTIVE=true \
   -e N8N_BASIC_AUTH_USER=admin \
   -e N8N_BASIC_AUTH_PASSWORD=admin123 \
@@ -446,7 +446,7 @@ n8n start
 **Solution:**
 ```bash
 # Make sure you're in the backend directory
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp\backend
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp\backend
 
 # Make sure virtual environment is activated
 venv\Scripts\activate
@@ -478,13 +478,13 @@ uvicorn app.main:app --reload
    # In .env file, try different formats:
 
    # Format 1: localhost
-   DATABASE_URL=mssql+pyodbc://sa:Password@localhost:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+   DATABASE_URL=mssql+pyodbc://sa:Password@localhost:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 
    # Format 2: 127.0.0.1
-   DATABASE_URL=mssql+pyodbc://sa:Password@127.0.0.1:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+   DATABASE_URL=mssql+pyodbc://sa:Password@127.0.0.1:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 
    # Format 3: computer name
-   DATABASE_URL=mssql+pyodbc://sa:Password@DESKTOP-ABC123:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+   DATABASE_URL=mssql+pyodbc://sa:Password@DESKTOP-ABC123:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
    ```
 
 4. **Enable TCP/IP in SQL Server:**
@@ -649,7 +649,7 @@ npm install --legacy-peer-deps
 
 ```sql
 -- Connect to SQL Server
-USE dyson_pm;
+USE aiharvest_pm;
 
 -- View all machines
 SELECT * FROM machines;
@@ -668,7 +668,7 @@ SELECT * FROM maintenance_history;
 
 ```bash
 # Drop all data
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp\backend
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp\backend
 venv\Scripts\activate
 
 # Re-initialize
@@ -681,7 +681,7 @@ python -m app.scripts.seed_data
 ### Backend (Production)
 
 ```bash
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp\backend
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp\backend
 venv\Scripts\activate
 
 # Run with production settings
@@ -691,7 +691,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ### Frontend (Production)
 
 ```bash
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp\frontend
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp\frontend
 
 # Build production bundle
 npm run build
@@ -703,7 +703,7 @@ serve -s build -l 3000
 
 ## Quick Start Script
 
-Create `start_local.bat` in `Dyson_WOApp` directory:
+Create `start_local.bat` in `AIHarvest_WOApp` directory:
 
 ```batch
 @echo off
@@ -731,7 +731,7 @@ pause
 ```bash
 # Double-click start_local.bat
 # Or run from command line:
-cd E:\RepoInno\Dyson_WODemo\Dyson_WOApp
+cd E:\RepoInno\AIHarvest_WODemo\AIHarvest_WOApp
 start_local.bat
 ```
 

@@ -99,7 +99,7 @@ sudo apt install nginx certbot python3-certbot-nginx
 
 ### Scenario 2: Nginx Configuration (Subdomains)
 
-Create `/etc/nginx/sites-available/dyson-pm`:
+Create `/etc/nginx/sites-available/aiharvest-pm`:
 
 ```nginx
 # Frontend - Main domain
@@ -150,7 +150,7 @@ server {
 
 ### Scenario 3: Nginx Configuration (Path-Based)
 
-Create `/etc/nginx/sites-available/dyson-pm`:
+Create `/etc/nginx/sites-available/aiharvest-pm`:
 
 ```nginx
 server {
@@ -193,7 +193,7 @@ server {
 
 ```bash
 # Enable the site
-sudo ln -s /etc/nginx/sites-available/dyson-pm /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/aiharvest-pm /etc/nginx/sites-enabled/
 
 # Test configuration
 sudo nginx -t
@@ -219,7 +219,7 @@ sudo certbot --nginx -d your-domain.com
 ### 1. Update `.env` File on Server
 
 ```bash
-cd /path/to/Dyson_WOApp
+cd /path/to/AIHarvest_WOApp
 nano .env
 ```
 
@@ -249,7 +249,7 @@ services:
 The `REACT_APP_API_URL` is baked into the build, so you must rebuild:
 
 ```bash
-cd /path/to/Dyson_WOApp
+cd /path/to/AIHarvest_WOApp
 docker-compose -f docker-compose.prod.yml down
 docker-compose -f docker-compose.prod.yml build --no-cache frontend
 docker-compose -f docker-compose.prod.yml up -d
@@ -293,7 +293,7 @@ A record: n8n.pm.example.com → 203.0.113.50
 
 ### `.env` Configuration
 ```env
-DATABASE_URL=mssql+pyodbc://sa:YourPassword@192.168.0.18,2433/AIHarvest_Dyson_Demo?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+DATABASE_URL=mssql+pyodbc://sa:YourPassword@192.168.0.18,2433/AIHarvest_Demo?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
 LLM_PROVIDER=gemini
 GOOGLE_API_KEY=your-actual-key
 CONFIDENCE_THRESHOLD=0.7
@@ -318,7 +318,7 @@ TIMEZONE=America/New_York
 
 ### Deploy
 ```bash
-cd /path/to/Dyson_WOApp
+cd /path/to/AIHarvest_WOApp
 
 # Rebuild with new domain configuration
 docker-compose -f docker-compose.prod.yml down
@@ -326,8 +326,8 @@ docker-compose -f docker-compose.prod.yml build --no-cache frontend
 docker-compose -f docker-compose.prod.yml up -d
 
 # Setup nginx (see nginx config above)
-sudo nano /etc/nginx/sites-available/dyson-pm
-sudo ln -s /etc/nginx/sites-available/dyson-pm /etc/nginx/sites-enabled/
+sudo nano /etc/nginx/sites-available/aiharvest-pm
+sudo ln -s /etc/nginx/sites-available/aiharvest-pm /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 

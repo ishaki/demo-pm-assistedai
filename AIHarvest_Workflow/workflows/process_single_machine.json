@@ -156,7 +156,7 @@
     },
     {
       "parameters": {
-        "fromEmail": "noreply@dyson-pm.com",
+        "fromEmail": "noreply@aiharvest-pm.com",
         "toEmail": "={{ $json.supplier_email }}",
         "subject": "=PM Work Order - {{ $json.machine_id }}",
         "emailType": "html",
@@ -195,7 +195,7 @@
     },
     {
       "parameters": {
-        "fromEmail": "noreply@dyson-pm.com",
+        "fromEmail": "noreply@aiharvest-pm.com",
         "toEmail": "={{ $json.supplier_email }}",
         "subject": "=PM Notification - {{ $json.machine_id }}",
         "emailType": "html",

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Dyson PM System - Production Deployment Script
+# AIHarvest PM System - Production Deployment Script
 # This script deploys the application to a test/production server
 
 set -e  # Exit on error
 
 echo "========================================="
-echo "Dyson PM System - Deployment Script"
+echo "AIHarvest PM System - Deployment Script"
 echo "========================================="
 echo ""
 

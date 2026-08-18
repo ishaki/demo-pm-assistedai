@@ -22,7 +22,7 @@ The "Get AI Decision" feature uses Large Language Models (LLMs) to analyze machi
 
 ### 1. Frontend Trigger
 
-**Location:** `Dyson_WOApp/frontend/src/pages/MachineDetail.jsx:52-65`
+**Location:** `AIHarvest_WOApp/frontend/src/pages/MachineDetail.jsx:52-65`
 
 When a user clicks the "Get AI Decision" button on the machine detail page:
 - The frontend calls `aiService.getDecision(machineId)`
@@ -43,7 +43,7 @@ const handleGetAIDecision = async () => {
 
 ### 2. API Endpoint
 
-**Location:** `Dyson_WOApp/backend/app/routers/ai.py:16-69`
+**Location:** `AIHarvest_WOApp/backend/app/routers/ai.py:16-69`
 
 The endpoint receives the request and:
 1. Verifies the machine exists using `MachineService`
@@ -53,7 +53,7 @@ The endpoint receives the request and:
 
 ### 3. AI Service Core Logic
 
-**Location:** `Dyson_WOApp/backend/app/services/ai_service.py:25-166`
+**Location:** `AIHarvest_WOApp/backend/app/services/ai_service.py:25-166`
 
 This is where the main intelligence happens:
 
@@ -139,7 +139,7 @@ can_auto_execute = (
 
 ## Decision Rules
 
-**Location:** `Dyson_WOApp/backend/app/services/llm_providers/base.py:84-131`
+**Location:** `AIHarvest_WOApp/backend/app/services/llm_providers/base.py:84-131`
 
 The LLM is given strict decision rules in priority order:
 
@@ -198,7 +198,7 @@ Low Priority:    PM is due within 22-30 days
 ### Database Models
 
 #### AIDecision Model
-**Location:** `Dyson_WOApp/backend/app/models/ai_decision.py`
+**Location:** `AIHarvest_WOApp/backend/app/models/ai_decision.py`
 
 ```python
 class AIDecision(Base):
@@ -222,7 +222,7 @@ class AIDecision(Base):
 ### Schemas
 
 #### AIDecisionResponse
-**Location:** `Dyson_WOApp/backend/app/schemas/ai_decision.py`
+**Location:** `AIHarvest_WOApp/backend/app/schemas/ai_decision.py`
 
 ```python
 class AIDecisionBase(BaseModel):
@@ -245,7 +245,7 @@ class AIDecisionBase(BaseModel):
 
 ### Base Provider Architecture
 
-**Location:** `Dyson_WOApp/backend/app/services/llm_providers/base.py`
+**Location:** `AIHarvest_WOApp/backend/app/services/llm_providers/base.py`
 
 All LLM providers inherit from `BaseLLMProvider`:
 
@@ -266,7 +266,7 @@ class BaseLLMProvider(ABC):
 
 ### OpenAI Provider Example
 
-**Location:** `Dyson_WOApp/backend/app/services/llm_providers/openai_provider.py`
+**Location:** `AIHarvest_WOApp/backend/app/services/llm_providers/openai_provider.py`
 
 ```python
 class OpenAIProvider(BaseLLMProvider):
@@ -336,7 +336,7 @@ Based on the above information, provide your decision in JSON format only.
 
 ## Decision Execution
 
-**Location:** `Dyson_WOApp/backend/app/services/ai_service.py:168-335`
+**Location:** `AIHarvest_WOApp/backend/app/services/ai_service.py:168-335`
 
 ### Execute Decision Method
 
@@ -456,7 +456,7 @@ if ai_decision.decision == "WAIT":
 
 ## API Endpoints
 
-**Location:** `Dyson_WOApp/backend/app/routers/ai.py`
+**Location:** `AIHarvest_WOApp/backend/app/routers/ai.py`
 
 ### 1. Get AI Decision
 
@@ -854,7 +854,7 @@ CONFIDENCE_THRESHOLD=0.7  # 0.0 to 1.0
 
 ### Provider Selection
 
-**Location:** `Dyson_WOApp/backend/app/services/llm_providers/__init__.py`
+**Location:** `AIHarvest_WOApp/backend/app/services/llm_providers/__init__.py`
 
 ```python
 def get_llm_provider() -> BaseLLMProvider:

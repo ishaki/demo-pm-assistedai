@@ -13,7 +13,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
-    container_name: dyson_backend_prod
+    container_name: aiharvest_backend_prod
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -49,7 +49,7 @@ services:
       dockerfile: Dockerfile
       args:
         - REACT_APP_API_URL=${REACT_APP_API_URL}
-    container_name: dyson_frontend_prod
+    container_name: aiharvest_frontend_prod
     restart: unless-stopped
     ports:
       - "3000:80"
@@ -67,7 +67,7 @@ services:
   # n8n Workflow Automation - Production
   n8n:
     image: n8nio/n8n:latest
-    container_name: dyson_n8n_prod
+    container_name: aiharvest_n8n_prod
     restart: unless-stopped
     ports:
       - "5678:5678"

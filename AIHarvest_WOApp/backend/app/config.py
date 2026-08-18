@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # Database Configuration (MS SQL Server)
-    DATABASE_URL: str = "mssql+pyodbc://sa:YourStrong!Passw0rd@mssql:1433/dyson_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+    DATABASE_URL: str = "mssql+pyodbc://sa:YourStrong!Passw0rd@mssql:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
 
     # LLM Configuration
     LLM_PROVIDER: str = "openai"  # Options: openai, claude, gemini
