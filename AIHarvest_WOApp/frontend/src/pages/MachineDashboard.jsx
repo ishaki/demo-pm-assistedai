@@ -12,6 +12,11 @@ import useMachines from '../hooks/useMachines';
 import { formatDate, formatDaysUntilPM } from '../utils/dateUtils';
 import { getPMStatusLabel, getPMStatusVariant } from '../utils/statusUtils';
 
+// Nine columns stop fitting below 1440px. These two drop out first: PM
+// frequency is static reference data, and both it and the supplier are shown
+// in full on the machine detail page, so nothing becomes unreachable.
+const WIDE_ONLY = 'hidden min-[1440px]:table-cell';
+
 const MachineDashboard = () => {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState('all');
@@ -237,7 +242,7 @@ const MachineDashboard = () => {
                     Location
                   </TableSortLabel>
                 </TableCell>
-                <TableCell header>
+                <TableCell header className={WIDE_ONLY}>
                   <TableSortLabel
                     active={orderBy === 'pm_frequency'}
                     direction={order}
@@ -265,7 +270,7 @@ const MachineDashboard = () => {
                   </TableSortLabel>
                 </TableCell>
                 <TableCell header>Status</TableCell>
-                <TableCell header>Supplier</TableCell>
+                <TableCell header className={WIDE_ONLY}>Supplier</TableCell>
                 <TableCell header align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -287,7 +292,7 @@ const MachineDashboard = () => {
                   <TableCell>
                     <span className="block max-w-[130px] truncate" title={machine.location}>{machine.location}</span>
                   </TableCell>
-                  <TableCell>{machine.pm_frequency}</TableCell>
+                  <TableCell className={WIDE_ONLY}>{machine.pm_frequency}</TableCell>
                   <TableCell className="whitespace-nowrap">{formatDate(machine.next_pm_date)}</TableCell>
                   <TableCell align="right" className="whitespace-nowrap">
                     <span className={`font-${machine.days_until_pm < 0 ? 'bold' : 'normal'} ${machine.days_until_pm < 0 ? 'text-error-on-soft' : 'text-content'}`}>
@@ -299,7 +304,7 @@ const MachineDashboard = () => {
                       {getPMStatusLabel(machine.pm_status)}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={WIDE_ONLY}>
                     <span className="block max-w-[120px] truncate text-sm text-content-muted" title={machine.assigned_supplier || '-'}>
                       {machine.assigned_supplier || '-'}
                     </span>

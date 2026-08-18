@@ -20,6 +20,20 @@ import {
   getPriorityVariant,
 } from '../utils/statusUtils';
 
+/**
+ * One fixed-size cell in the action strip. Buttons appear and disappear with a
+ * work order's status, so without a reserved slot per action the strip is a
+ * different width on every row and the icons never line up down the column.
+ * An absent action leaves its slot empty rather than collapsing it.
+ */
+const ActionSlot = ({ children }) => (
+  <span className="inline-flex h-9 w-9 items-center justify-center">{children}</span>
+);
+
+// Seven columns stop fitting below 1440px. Created goes first: it is the
+// least actionable field, and the scheduled date is the one that drives work.
+const WIDE_ONLY = 'hidden min-[1440px]:table-cell';
+
 const WorkOrderView = () => {
   const navigate = useNavigate();
   const toast = useToast();
@@ -497,7 +511,7 @@ const WorkOrderView = () => {
                     Priority
                   </TableSortLabel>
                 </TableCell>
-                <TableCell header>
+                <TableCell header className={WIDE_ONLY}>
                   <TableSortLabel
                     active={orderBy === 'created_at'}
                     direction={order}
@@ -553,70 +567,84 @@ const WorkOrderView = () => {
                     )}
                   </TableCell>
 
-                  <TableCell className="whitespace-nowrap">{formatDateTime(wo.created_at)}</TableCell>
+                  <TableCell className={`whitespace-nowrap ${WIDE_ONLY}`}>{formatDateTime(wo.created_at)}</TableCell>
 
                   <TableCell className="whitespace-nowrap">
                     {wo.scheduled_date ? formatDateTime(wo.scheduled_date) : 'Not scheduled'}
                   </TableCell>
 
                   <TableCell align="center">
-                    <div className="flex gap-1 justify-center">
-                      {/* Approve Button */}
-                      {(wo.status === 'Draft' || wo.status === 'Pending_Approval') && (
-                        <button
-                          onClick={() => handleOpenApproval(wo)}
-                          className="p-2 rounded-full text-success-on-soft hover:bg-success-soft transition-colors"
-                          title="Approve"
-                        >
-                          <span className="material-icons-round text-xl">check_circle</span>
-                        </button>
-                      )}
+                    <div className="flex items-center justify-center gap-1">
+                      {/* Slot 1: approve and complete are mutually exclusive
+                          (one needs a pre-approval status, the other an
+                          approved one), so they share a slot. */}
+                      <ActionSlot>
+                        {(wo.status === 'Draft' || wo.status === 'Pending_Approval') && (
+                          <button
+                            onClick={() => handleOpenApproval(wo)}
+                            className="p-2 rounded-full text-success-on-soft hover:bg-success-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-success"
+                            title="Approve"
+                            aria-label={`Approve ${wo.wo_number}`}
+                          >
+                            <span className="material-icons-round text-xl">check_circle</span>
+                          </button>
+                        )}
 
-                      {/* Complete Button. Withheld until the scheduled date
-                          arrives -- handleCompleteWorkOrder rejects a
-                          completion dated before it, so offering the action
-                          earlier only leads to a dialog that cannot be
-                          submitted. */}
-                      {wo.status === 'Approved' && hasDateArrived(wo.scheduled_date) && (
-                        <button
-                          onClick={() => handleOpenCompleteDialog(wo)}
-                          className="p-2 rounded-full text-primary-on-soft hover:bg-primary-soft transition-colors"
-                          title="Complete"
-                        >
-                          <span className="material-icons-round text-xl">check_circle</span>
-                        </button>
-                      )}
+                        {/* Withheld until the scheduled date arrives --
+                            handleCompleteWorkOrder rejects a completion dated
+                            before it, so offering the action earlier only
+                            leads to a dialog that cannot be submitted. */}
+                        {wo.status === 'Approved' && hasDateArrived(wo.scheduled_date) && (
+                          <button
+                            onClick={() => handleOpenCompleteDialog(wo)}
+                            className="p-2 rounded-full text-primary-on-soft hover:bg-primary-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            title="Complete"
+                            aria-label={`Complete ${wo.wo_number}`}
+                          >
+                            {/* task_alt, not check_circle: approve and complete
+                                previously shared a glyph and were told apart
+                                only by colour. */}
+                            <span className="material-icons-round text-xl">task_alt</span>
+                          </button>
+                        )}
+                      </ActionSlot>
 
-                      {/* Update Schedule Button - Only for Approved status */}
-                      {wo.status === 'Approved' && (
-                        <button
-                          onClick={() => handleOpenScheduleDialog(wo)}
-                          className="p-2 rounded-full text-warning-on-soft hover:bg-warning-soft transition-colors"
-                          title="Update Schedule"
-                        >
-                          <span className="material-icons-round text-xl">calendar_today</span>
-                        </button>
-                      )}
+                      <ActionSlot>
+                        {wo.status === 'Approved' && (
+                          <button
+                            onClick={() => handleOpenScheduleDialog(wo)}
+                            className="p-2 rounded-full text-warning-on-soft hover:bg-warning-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                            title="Update Schedule"
+                            aria-label={`Update schedule for ${wo.wo_number}`}
+                          >
+                            <span className="material-icons-round text-xl">event</span>
+                          </button>
+                        )}
+                      </ActionSlot>
 
-                      {/* Cancel Button */}
-                      {wo.status !== 'Completed' && wo.status !== 'Cancelled' && (
-                        <button
-                          onClick={() => handleCancel(wo.id, wo.wo_number)}
-                          className="p-2 rounded-full text-error-on-soft hover:bg-error-soft transition-colors"
-                          title="Cancel"
-                        >
-                          <span className="material-icons-round text-xl">cancel</span>
-                        </button>
-                      )}
+                      <ActionSlot>
+                        {wo.status !== 'Completed' && wo.status !== 'Cancelled' && (
+                          <button
+                            onClick={() => handleCancel(wo.id, wo.wo_number)}
+                            className="p-2 rounded-full text-error-on-soft hover:bg-error-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-error"
+                            title="Cancel"
+                            aria-label={`Cancel ${wo.wo_number}`}
+                          >
+                            <span className="material-icons-round text-xl">cancel</span>
+                          </button>
+                        )}
+                      </ActionSlot>
 
-                      {/* View Details Button */}
-                      <button
-                        onClick={() => navigate(`/machines/${wo.machine_id}`)}
-                        className="p-2 rounded-full text-info-on-soft hover:bg-info-soft transition-colors"
-                        title="View Machine"
-                      >
-                        <span className="material-icons-round text-xl">visibility</span>
-                      </button>
+                      <ActionSlot>
+                        <button
+                          onClick={() => navigate(`/machines/${wo.machine_id}`)}
+                          className="p-2 rounded-full text-info-on-soft hover:bg-info-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-info"
+                          title="View Machine"
+                          aria-label={`View machine for ${wo.wo_number}`}
+                        >
+                          <span className="material-icons-round text-xl">visibility</span>
+                        </button>
+                      </ActionSlot>
                     </div>
                   </TableCell>
                 </TableRow>
