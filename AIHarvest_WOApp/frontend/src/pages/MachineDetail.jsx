@@ -96,34 +96,52 @@ const MachineDetail = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-surface border-b border-line -mx-6 -mt-6 px-6 py-4 sticky top-0 z-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <button
-              onClick={() => navigate('/machines')}
-              className="inline-flex items-center text-sm font-medium text-content-muted hover:text-primary-on-soft transition-colors mb-2"
-            >
-              <span className="material-icons-round text-base mr-1">arrow_back</span>
-              BACK TO LIST
-            </button>
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-semibold text-content">{machine.machine_id}</h1>
-              <Badge variant={getPMStatusVariant(machine.pm_status)}>
-                {getPMStatusLabel(machine.pm_status)}
-              </Badge>
-            </div>
-          </div>
-          <Button
-            variant="primary"
-            startIcon="smart_toy"
-            onClick={handleGetAIDecision}
-            disabled={aiLoading}
+      {/* Page header. Sitting in a Card rather than a full-bleed bar puts it on
+          the same edges as the cards below, and its content lands on the same
+          axis as every label in them. Not sticky: a rounded card pinned to the
+          top would have page content sliding under its corners, and this page
+          barely scrolls. */}
+      <Card>
+        <CardContent className="py-5">
+          <button
+            onClick={() => navigate('/machines')}
+            className="inline-flex items-center gap-1 mb-3 rounded text-sm font-medium text-content-muted transition-colors hover:text-primary-on-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            {aiLoading ? 'Getting AI Decision...' : 'Get AI Decision'}
-          </Button>
-        </div>
-      </div>
+            <span className="material-icons-round text-base">arrow_back</span>
+            Back to list
+          </button>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-[2rem] font-bold leading-tight tracking-tight text-content">
+                  {machine.machine_id}
+                </h1>
+                <Badge variant={getPMStatusVariant(machine.pm_status)}>
+                  {getPMStatusLabel(machine.pm_status)}
+                </Badge>
+              </div>
+              {/* A bare asset code says little on its own, so the name and
+                  location ride along as a subtitle. */}
+              <p className="mt-1.5 text-sm text-content-muted truncate">
+                {machine.name}
+                {machine.location && (
+                  <span className="text-content-subtle"> &middot; {machine.location}</span>
+                )}
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              startIcon="smart_toy"
+              onClick={handleGetAIDecision}
+              disabled={aiLoading}
+              className="flex-shrink-0"
+            >
+              {aiLoading ? 'Getting AI Decision...' : 'Get AI Decision'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
