@@ -113,10 +113,10 @@ const MachineDashboard = () => {
 
   if (error) {
     return (
-      <div className="bg-error-light border border-error rounded-lg p-4 flex items-start justify-between">
+      <div className="bg-error-soft border border-error-line rounded-lg p-4 flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <span className="material-icons-round text-error">error</span>
-          <span className="text-error font-medium">{error}</span>
+          <span className="material-icons-round text-error-on-soft">error</span>
+          <span className="text-error-on-soft font-medium">{error}</span>
         </div>
         <Button variant="text" size="sm" onClick={refetch}>Retry</Button>
       </div>
@@ -127,7 +127,7 @@ const MachineDashboard = () => {
     <div>
       {/* Page Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Machine Dashboard</h1>
+        <h1 className="text-3xl font-bold text-content">Machine Dashboard</h1>
         <Button variant="outlined" startIcon="refresh" onClick={refetch}>
           Refresh
         </Button>
@@ -135,38 +135,38 @@ const MachineDashboard = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-        <Card className="bg-error-light border-error">
+        <Card className="bg-error-soft border-error-line">
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-error">{summary.overdue}</div>
-            <div className="text-sm text-gray-700 mt-1 font-medium">Overdue</div>
+            <div className="text-4xl font-bold text-error-on-soft">{summary.overdue}</div>
+            <div className="text-sm text-content mt-1 font-medium">Overdue</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-warning-light border-warning">
+        <Card className="bg-warning-soft border-warning-line">
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-warning">{summary.due_soon}</div>
-            <div className="text-sm text-gray-700 mt-1 font-medium">Due Soon (≤30 days)</div>
+            <div className="text-4xl font-bold text-warning-on-soft">{summary.due_soon}</div>
+            <div className="text-sm text-content mt-1 font-medium">Due Soon (≤30 days)</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-100 border-blue-500">
+        <Card className="bg-info-soft border-info-line">
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-blue-700">{summary.scheduled}</div>
-            <div className="text-sm text-gray-700 mt-1 font-medium">Scheduled</div>
+            <div className="text-4xl font-bold text-info-on-soft">{summary.scheduled}</div>
+            <div className="text-sm text-content mt-1 font-medium">Scheduled</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-success-light border-success">
+        <Card className="bg-success-soft border-success-line">
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-success">{summary.ok}</div>
-            <div className="text-sm text-gray-700 mt-1 font-medium">OK</div>
+            <div className="text-4xl font-bold text-success-on-soft">{summary.ok}</div>
+            <div className="text-sm text-content mt-1 font-medium">OK</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="text-center">
-            <div className="text-4xl font-bold text-primary">{summary.total}</div>
-            <div className="text-sm text-gray-700 mt-1 font-medium">Total Machines</div>
+            <div className="text-4xl font-bold text-primary-on-soft">{summary.total}</div>
+            <div className="text-sm text-content mt-1 font-medium">Total Machines</div>
           </CardContent>
         </Card>
       </div>
@@ -199,9 +199,9 @@ const MachineDashboard = () => {
 
       {/* Machine Table */}
       {filteredAndSortedMachines.length === 0 ? (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
-          <span className="material-icons-round text-blue-600">info</span>
-          <span className="text-blue-800">
+        <div className="bg-info-soft border border-info-line rounded-lg p-4 flex items-center gap-3">
+          <span className="material-icons-round text-info-on-soft">info</span>
+          <span className="text-info-on-soft">
             No machines found matching the selected filter{searchTerm && ' and search criteria'}.
           </span>
         </div>
@@ -277,7 +277,7 @@ const MachineDashboard = () => {
                   onClick={() => navigate(`/machines/${machine.id}`)}
                 >
                   <TableCell>
-                    <span className="font-medium text-gray-800">
+                    <span className="font-medium text-content">
                       {machine.machine_id}
                     </span>
                   </TableCell>
@@ -286,7 +286,7 @@ const MachineDashboard = () => {
                   <TableCell>{machine.pm_frequency}</TableCell>
                   <TableCell>{formatDate(machine.next_pm_date)}</TableCell>
                   <TableCell align="right">
-                    <span className={`font-${machine.days_until_pm < 0 ? 'bold' : 'normal'} ${machine.days_until_pm < 0 ? 'text-error' : 'text-gray-800'}`}>
+                    <span className={`font-${machine.days_until_pm < 0 ? 'bold' : 'normal'} ${machine.days_until_pm < 0 ? 'text-error-on-soft' : 'text-content'}`}>
                       {formatDaysUntilPM(machine.days_until_pm)}
                     </span>
                   </TableCell>
@@ -296,14 +296,14 @@ const MachineDashboard = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm text-gray-600 truncate">
+                    <span className="text-sm text-content-muted truncate">
                       {machine.assigned_supplier || '-'}
                     </span>
                   </TableCell>
                   <TableCell align="center" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => navigate(`/machines/${machine.id}`)}
-                      className="p-2 rounded-full text-primary hover:bg-primary-50 transition-colors"
+                      className="p-2 rounded-full text-primary-on-soft hover:bg-primary-soft transition-colors"
                       title="View Details"
                     >
                       <span className="material-icons-round text-xl">visibility</span>

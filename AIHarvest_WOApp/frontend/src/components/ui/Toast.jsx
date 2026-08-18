@@ -62,26 +62,30 @@ const ToastContainer = ({ toasts, onRemove }) => {
 const Toast = ({ toast, onRemove }) => {
   const { id, message, type } = toast;
 
+  // `bg` pairs with its own `contrast` text token instead of a fixed white:
+  // these fills invert to light colors in dark mode. The `border` accent uses
+  // the family's hover shade, which lands darker in light mode and lighter in
+  // dark mode -- visible either way.
   const typeConfig = {
     success: {
-      bg: 'bg-success',
+      bg: 'bg-success text-success-contrast',
       icon: 'check_circle',
-      border: 'border-green-600',
+      border: 'border-success-hover',
     },
     error: {
-      bg: 'bg-error',
+      bg: 'bg-error text-error-contrast',
       icon: 'error',
-      border: 'border-red-600',
+      border: 'border-error-hover',
     },
     warning: {
-      bg: 'bg-warning',
+      bg: 'bg-warning text-warning-contrast',
       icon: 'warning',
-      border: 'border-amber-600',
+      border: 'border-warning-hover',
     },
     info: {
-      bg: 'bg-primary',
+      bg: 'bg-primary text-primary-contrast',
       icon: 'info',
-      border: 'border-blue-600',
+      border: 'border-primary-hover',
     },
   };
 
@@ -89,17 +93,17 @@ const Toast = ({ toast, onRemove }) => {
 
   return (
     <div
-      className={`${config.bg} text-white rounded-lg shadow-lg border-l-4 ${config.border} p-4 min-w-[320px] max-w-md pointer-events-auto animate-slide-in-right`}
+      className={`${config.bg} rounded-lg shadow-raised border-l-4 ${config.border} p-4 min-w-[320px] max-w-md pointer-events-auto animate-slide-in-right`}
       role="alert"
     >
       <div className="flex items-start gap-3">
-        <span className="material-icons-round text-white flex-shrink-0">{config.icon}</span>
+        <span className="material-icons-round flex-shrink-0">{config.icon}</span>
         <div className="flex-1 pt-0.5">
           <p className="text-sm font-medium leading-relaxed">{message}</p>
         </div>
         <button
           onClick={() => onRemove(id)}
-          className="text-white hover:text-gray-200 transition-colors flex-shrink-0 -mt-1 -mr-1"
+          className="opacity-80 hover:opacity-100 transition-opacity flex-shrink-0 -mt-1 -mr-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded"
           aria-label="Close notification"
         >
           <span className="material-icons-round text-lg">close</span>

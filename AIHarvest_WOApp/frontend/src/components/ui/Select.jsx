@@ -14,9 +14,9 @@ export const Select = ({
   return (
     <div className={clsx('flex flex-col', className)}>
       {label && (
-        <label className="text-sm font-medium text-gray-700 mb-1">
+        <label className="text-sm font-medium text-content mb-1">
           {label}
-          {required && <span className="text-error ml-1">*</span>}
+          {required && <span className="text-error-on-soft ml-1">*</span>}
         </label>
       )}
       <select
@@ -24,9 +24,9 @@ export const Select = ({
         onChange={onChange}
         disabled={disabled}
         className={clsx(
-          'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors',
-          'text-gray-800 bg-white',
-          disabled && 'bg-gray-100 cursor-not-allowed'
+          'w-full px-3 py-2 border border-line-strong rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary transition-colors',
+          'text-content bg-surface',
+          disabled && 'bg-sunken cursor-not-allowed'
         )}
         {...props}
       >

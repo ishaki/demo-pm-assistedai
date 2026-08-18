@@ -9,14 +9,16 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
     md: 'px-2.5 py-1 text-sm',
   };
 
+  // Each fill carries its matching `contrast` token: status colors go bright in
+  // dark mode, where white text on them would be unreadable.
   const variantClasses = {
-    default: 'bg-gray-100 text-gray-700',
-    primary: 'bg-primary text-white',
-    error: 'bg-error text-white',
-    warning: 'bg-warning text-white',
-    success: 'bg-success text-white',
-    info: 'bg-blue-500 text-white',
-    gray: 'bg-gray-500 text-white',
+    default: 'bg-line text-content',
+    primary: 'bg-primary text-primary-contrast',
+    error: 'bg-error text-error-contrast',
+    warning: 'bg-warning text-warning-contrast',
+    success: 'bg-success text-success-contrast',
+    info: 'bg-info text-info-contrast',
+    gray: 'bg-line-strong text-content',
   };
 
   return (

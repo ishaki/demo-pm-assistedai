@@ -12,7 +12,9 @@ export const Button = ({
   type = 'button',
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  // focus-visible rather than focus: keyboard users still get the ring, mouse
+  // users don't get one on every click.
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
@@ -20,13 +22,15 @@ export const Button = ({
     lg: 'px-6 py-3 text-lg',
   };
 
+  // Solid fills pair with their own `contrast` token rather than a hardcoded
+  // white, because the fills invert to light colors in dark mode.
   const variantClasses = {
-    primary: 'bg-primary text-white hover:bg-primary-600 focus:ring-primary disabled:bg-gray-300',
-    outlined: 'border border-primary text-primary bg-white hover:bg-primary-50 focus:ring-primary disabled:border-gray-300 disabled:text-gray-400',
-    text: 'text-primary hover:bg-primary-50 focus:ring-primary disabled:text-gray-400',
-    success: 'bg-success text-white hover:bg-green-600 focus:ring-success disabled:bg-gray-300',
-    error: 'bg-error text-white hover:bg-red-600 focus:ring-error disabled:bg-gray-300',
-    warning: 'bg-warning text-white hover:bg-yellow-600 focus:ring-warning disabled:bg-gray-300',
+    primary: 'bg-primary text-primary-contrast hover:bg-primary-hover focus-visible:ring-primary disabled:bg-line-strong disabled:text-content-subtle',
+    outlined: 'border border-primary text-primary-on-soft bg-transparent hover:bg-primary-soft focus-visible:ring-primary disabled:border-line disabled:text-content-subtle',
+    text: 'text-primary-on-soft hover:bg-primary-soft focus-visible:ring-primary disabled:text-content-subtle',
+    success: 'bg-success text-success-contrast hover:bg-success-hover focus-visible:ring-success disabled:bg-line-strong disabled:text-content-subtle',
+    error: 'bg-error text-error-contrast hover:bg-error-hover focus-visible:ring-error disabled:bg-line-strong disabled:text-content-subtle',
+    warning: 'bg-warning text-warning-contrast hover:bg-warning-hover focus-visible:ring-warning disabled:bg-line-strong disabled:text-content-subtle',
   };
 
   return (

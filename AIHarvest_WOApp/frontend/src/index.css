@@ -2,6 +2,159 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme palette.
+ *
+ * Values are "R G B" channel triples rather than hex so Tailwind can compose
+ * them with an alpha channel — see the `token()` helper in tailwind.config.js.
+ * Light lives on :root, dark overrides on .dark (stamped onto <html> by
+ * src/contexts/ThemeContext.jsx and, pre-hydration, by the inline script in
+ * public/index.html).
+ *
+ * Contrast note: the old accent (#0ea5e9) put white button text at 2.7:1, well
+ * under the 4.5:1 AA bar. Light mode now uses sky-700 (5.9:1 with white). Dark
+ * mode inverts the relationship — a bright accent carrying near-black text —
+ * because a dark fill on a dark canvas has nowhere to go.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces, back to front */
+  --canvas: 245 247 250;
+  --surface: 255 255 255;
+  --raised: 255 255 255;
+  --sunken: 248 250 252;
+
+  /* Text, descending emphasis */
+  --content: 15 23 42;
+  --content-muted: 71 85 105;
+  --content-subtle: 148 163 184;
+
+  /* Hairlines */
+  --line: 226 232 240;
+  --line-strong: 203 213 225;
+
+  --primary: 3 105 161;
+  --primary-hover: 7 89 133;
+  --primary-contrast: 255 255 255;
+  --primary-soft: 240 249 255;
+  --primary-on-soft: 3 105 161;
+  --primary-line: 186 230 253;
+
+  --success: 4 120 87;
+  --success-hover: 6 95 70;
+  --success-contrast: 255 255 255;
+  --success-soft: 236 253 245;
+  --success-on-soft: 4 120 87;
+  --success-line: 167 243 208;
+
+  --error: 220 38 38;
+  --error-hover: 185 28 28;
+  --error-contrast: 255 255 255;
+  --error-soft: 254 242 242;
+  --error-on-soft: 185 28 28;
+  --error-line: 254 202 202;
+
+  --warning: 180 83 9;
+  --warning-hover: 146 64 14;
+  --warning-contrast: 255 255 255;
+  --warning-soft: 255 251 235;
+  --warning-on-soft: 180 83 9;
+  --warning-line: 253 230 138;
+
+  --info: 37 99 235;
+  --info-hover: 29 78 216;
+  --info-contrast: 255 255 255;
+  --info-soft: 239 246 255;
+  --info-on-soft: 29 78 216;
+  --info-line: 191 219 254;
+
+  --shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.06);
+  --shadow-card-hover: 0 4px 6px -1px rgb(15 23 42 / 0.10), 0 2px 4px -2px rgb(15 23 42 / 0.06);
+  --shadow-soft: 0 4px 6px -1px rgb(15 23 42 / 0.05), 0 2px 4px -1px rgb(15 23 42 / 0.03);
+  --shadow-raised: 0 10px 15px -3px rgb(15 23 42 / 0.10), 0 4px 6px -4px rgb(15 23 42 / 0.10);
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Blue-tinted slate rather than pure black — less eye strain, and it sits
+     better under a sky accent than a neutral gray would. */
+  --canvas: 11 18 32;
+  --surface: 19 27 43;
+  --raised: 26 36 54;
+  --sunken: 15 22 38;
+
+  --content: 230 237 246;
+  --content-muted: 154 171 194;
+  --content-subtle: 107 124 148;
+
+  --line: 38 51 70;
+  --line-strong: 56 71 93;
+
+  --primary: 56 189 248;
+  --primary-hover: 125 211 252;
+  --primary-contrast: 6 32 47;
+  --primary-soft: 12 42 62;
+  --primary-on-soft: 125 211 252;
+  --primary-line: 21 94 138;
+
+  --success: 52 211 153;
+  --success-hover: 110 231 183;
+  --success-contrast: 4 36 26;
+  --success-soft: 11 42 34;
+  --success-on-soft: 110 231 183;
+  --success-line: 18 96 74;
+
+  --error: 248 113 113;
+  --error-hover: 252 165 165;
+  --error-contrast: 43 11 11;
+  --error-soft: 43 20 24;
+  --error-on-soft: 252 165 165;
+  --error-line: 127 29 29;
+
+  --warning: 251 191 36;
+  --warning-hover: 252 211 77;
+  --warning-contrast: 42 28 2;
+  --warning-soft: 43 34 16;
+  --warning-on-soft: 252 211 77;
+  --warning-line: 120 68 14;
+
+  --info: 96 165 250;
+  --info-hover: 147 197 253;
+  --info-contrast: 10 26 51;
+  --info-soft: 16 34 61;
+  --info-on-soft: 147 197 253;
+  --info-line: 30 64 175;
+
+  /* Light-mode shadows vanish against a dark canvas — these go deeper and
+     more opaque to keep cards legibly separated from the background. */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.45), 0 1px 2px -1px rgb(0 0 0 / 0.35);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.55), 0 2px 4px -2px rgb(0 0 0 / 0.40);
+  --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.40), 0 2px 4px -1px rgb(0 0 0 / 0.30);
+  --shadow-raised: 0 10px 15px -3px rgb(0 0 0 / 0.60), 0 4px 6px -4px rgb(0 0 0 / 0.50);
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-content antialiased;
+  }
+
+  /* Tailwind's ring offset defaults to solid white, which punches a bright
+     halo around every focused control on a dark background. Point it at the
+     card surface instead so it reads as a gap in both themes. */
+  *,
+  ::before,
+  ::after {
+    --tw-ring-offset-color: rgb(var(--surface));
+  }
+
+  ::selection {
+    @apply bg-primary/25 text-content;
+  }
+}
+
 /* Custom scrollbar styles for sidebar */
 @layer components {
   .scrollbar-thin::-webkit-scrollbar {
@@ -14,12 +167,12 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: rgb(var(--line-strong));
     border-radius: 3px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: rgb(var(--content-subtle));
   }
 }
 

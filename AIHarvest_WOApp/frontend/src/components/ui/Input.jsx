@@ -18,15 +18,15 @@ export const Input = ({
   return (
     <div className={clsx('flex flex-col', className)}>
       {label && (
-        <label className="text-sm font-medium text-gray-700 mb-1">
+        <label className="text-sm font-medium text-content mb-1">
           {label}
-          {required && <span className="text-error ml-1">*</span>}
+          {required && <span className="text-error-on-soft ml-1">*</span>}
         </label>
       )}
       <div className="relative">
         {startIcon && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="material-icons-round text-gray-400 text-xl">{startIcon}</span>
+            <span className="material-icons-round text-content-subtle text-xl">{startIcon}</span>
           </div>
         )}
         <input
@@ -36,19 +36,19 @@ export const Input = ({
           placeholder={placeholder}
           disabled={disabled}
           className={clsx(
-            'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors',
+            'w-full px-3 py-2 border rounded-lg focus:outline-none focus-visible:ring-2 transition-colors',
             startIcon && 'pl-10',
             error
-              ? 'border-error focus:ring-error focus:border-error'
-              : 'border-gray-300 focus:ring-primary focus:border-primary',
-            disabled && 'bg-gray-100 cursor-not-allowed',
-            'text-gray-800 placeholder-gray-400'
+              ? 'border-error focus-visible:ring-error focus-visible:border-error'
+              : 'border-line-strong focus-visible:ring-primary focus-visible:border-primary',
+            disabled && 'bg-sunken cursor-not-allowed',
+            'bg-surface text-content placeholder-content-subtle'
           )}
           {...props}
         />
       </div>
       {helperText && (
-        <p className={clsx('text-sm mt-1', error ? 'text-error' : 'text-gray-600')}>
+        <p className={clsx('text-sm mt-1', error ? 'text-error-on-soft' : 'text-content-muted')}>
           {helperText}
         </p>
       )}

@@ -401,10 +401,10 @@ const WorkOrderView = () => {
 
   if (error) {
     return (
-      <div className="bg-error-light border border-error rounded-lg p-4 flex items-start justify-between">
+      <div className="bg-error-soft border border-error-line rounded-lg p-4 flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <span className="material-icons-round text-error">error</span>
-          <span className="text-error font-medium">{error}</span>
+          <span className="material-icons-round text-error-on-soft">error</span>
+          <span className="text-error-on-soft font-medium">{error}</span>
         </div>
         <Button variant="text" size="sm" onClick={refetch}>Retry</Button>
       </div>
@@ -415,7 +415,7 @@ const WorkOrderView = () => {
     <div>
       {/* Page Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Work Orders</h1>
+        <h1 className="text-3xl font-bold text-content">Work Orders</h1>
         <Button variant="outlined" startIcon="refresh" onClick={refetch}>
           Refresh
         </Button>
@@ -450,9 +450,9 @@ const WorkOrderView = () => {
 
       {/* Work Orders Table */}
       {filteredAndSortedWorkOrders.length === 0 ? (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
-          <span className="material-icons-round text-blue-600">info</span>
-          <span className="text-blue-800">
+        <div className="bg-info-soft border border-info-line rounded-lg p-4 flex items-center gap-3">
+          <span className="material-icons-round text-info-on-soft">info</span>
+          <span className="text-info-on-soft">
             No work orders found matching the selected filter{searchTerm && ' and search criteria'}.
           </span>
         </div>
@@ -522,7 +522,7 @@ const WorkOrderView = () => {
               {paginatedWorkOrders.map((wo) => (
                 <TableRow key={wo.id} hover>
                   <TableCell>
-                    <span className="font-bold text-gray-800">
+                    <span className="font-bold text-content">
                       {wo.wo_number}
                     </span>
                   </TableCell>
@@ -530,7 +530,7 @@ const WorkOrderView = () => {
                   <TableCell>
                     <button
                       onClick={() => navigate(`/machines/${wo.machine_id}`)}
-                      className="text-primary hover:underline font-medium"
+                      className="text-primary-on-soft hover:underline font-medium"
                     >
                       {wo.machine_name || `Machine #${wo.machine_id}`}
                     </button>
@@ -564,7 +564,7 @@ const WorkOrderView = () => {
                       {(wo.status === 'Draft' || wo.status === 'Pending_Approval') && (
                         <button
                           onClick={() => handleOpenApproval(wo)}
-                          className="p-2 rounded-full text-success hover:bg-success-light transition-colors"
+                          className="p-2 rounded-full text-success-on-soft hover:bg-success-soft transition-colors"
                           title="Approve"
                         >
                           <span className="material-icons-round text-xl">check_circle</span>
@@ -575,7 +575,7 @@ const WorkOrderView = () => {
                       {wo.status === 'Approved' && wo.scheduled_date && (
                         <button
                           onClick={() => handleOpenCompleteDialog(wo)}
-                          className="p-2 rounded-full text-primary hover:bg-primary-50 transition-colors"
+                          className="p-2 rounded-full text-primary-on-soft hover:bg-primary-soft transition-colors"
                           title="Complete"
                         >
                           <span className="material-icons-round text-xl">check_circle</span>
@@ -586,7 +586,7 @@ const WorkOrderView = () => {
                       {wo.status === 'Approved' && (
                         <button
                           onClick={() => handleOpenScheduleDialog(wo)}
-                          className="p-2 rounded-full text-warning hover:bg-warning-light transition-colors"
+                          className="p-2 rounded-full text-warning-on-soft hover:bg-warning-soft transition-colors"
                           title="Update Schedule"
                         >
                           <span className="material-icons-round text-xl">calendar_today</span>
@@ -597,7 +597,7 @@ const WorkOrderView = () => {
                       {wo.status !== 'Completed' && wo.status !== 'Cancelled' && (
                         <button
                           onClick={() => handleCancel(wo.id, wo.wo_number)}
-                          className="p-2 rounded-full text-error hover:bg-error-light transition-colors"
+                          className="p-2 rounded-full text-error-on-soft hover:bg-error-soft transition-colors"
                           title="Cancel"
                         >
                           <span className="material-icons-round text-xl">cancel</span>
@@ -607,7 +607,7 @@ const WorkOrderView = () => {
                       {/* View Details Button */}
                       <button
                         onClick={() => navigate(`/machines/${wo.machine_id}`)}
-                        className="p-2 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="p-2 rounded-full text-info-on-soft hover:bg-info-soft transition-colors"
                         title="View Machine"
                       >
                         <span className="material-icons-round text-xl">visibility</span>
@@ -640,12 +640,12 @@ const WorkOrderView = () => {
           {selectedWO && (
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Work Order Number</p>
-                <h3 className="text-xl font-semibold text-gray-800">{selectedWO.wo_number}</h3>
+                <p className="text-sm text-content-muted mb-1">Work Order Number</p>
+                <h3 className="text-xl font-semibold text-content">{selectedWO.wo_number}</h3>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Current Status</p>
+                <p className="text-sm text-content-muted mb-1">Current Status</p>
                 <Badge variant={getWorkOrderStatusVariant(selectedWO.status)}>
                   {getWorkOrderStatusLabel(selectedWO.status)}
                 </Badge>
@@ -653,9 +653,9 @@ const WorkOrderView = () => {
 
               {selectedWO.notes && (
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Notes</p>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <p className="text-sm text-gray-700">{selectedWO.notes}</p>
+                  <p className="text-sm text-content-muted mb-1">Notes</p>
+                  <div className="bg-sunken border border-line rounded-lg p-3">
+                    <p className="text-sm text-content">{selectedWO.notes}</p>
                   </div>
                 </div>
               )}
@@ -687,7 +687,7 @@ const WorkOrderView = () => {
           >
             {approving ? (
               <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
                 Approving...
               </div>
             ) : (
@@ -709,14 +709,14 @@ const WorkOrderView = () => {
             <div className="space-y-4">
               {/* Work Order Info */}
               <div>
-                <p className="text-sm text-gray-600 mb-1">Work Order Number</p>
-                <h3 className="text-xl font-semibold text-gray-800">{selectedWOForSchedule.wo_number}</h3>
+                <p className="text-sm text-content-muted mb-1">Work Order Number</p>
+                <h3 className="text-xl font-semibold text-content">{selectedWOForSchedule.wo_number}</h3>
               </div>
 
               {/* Machine Info */}
               <div>
-                <p className="text-sm text-gray-600 mb-1">Machine</p>
-                <p className="text-base font-medium text-gray-800">
+                <p className="text-sm text-content-muted mb-1">Machine</p>
+                <p className="text-base font-medium text-content">
                   Machine #{selectedWOForSchedule.machine_id}
                   {machineData && ` - ${machineData.name}`}
                 </p>
@@ -724,7 +724,7 @@ const WorkOrderView = () => {
 
               {/* Current Status */}
               <div>
-                <p className="text-sm text-gray-600 mb-1">Status</p>
+                <p className="text-sm text-content-muted mb-1">Status</p>
                 <Badge variant={getWorkOrderStatusVariant(selectedWOForSchedule.status)}>
                   {getWorkOrderStatusLabel(selectedWOForSchedule.status)}
                 </Badge>
@@ -733,8 +733,8 @@ const WorkOrderView = () => {
               {/* Current Scheduled Date */}
               {selectedWOForSchedule.scheduled_date && (
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Current Scheduled Date</p>
-                  <p className="text-base font-medium text-gray-800">
+                  <p className="text-sm text-content-muted mb-1">Current Scheduled Date</p>
+                  <p className="text-base font-medium text-content">
                     {formatDate(selectedWOForSchedule.scheduled_date)}
                   </p>
                 </div>
@@ -742,9 +742,9 @@ const WorkOrderView = () => {
 
               {/* Machine Next PM Date Info */}
               {machineData && machineData.next_pm_date && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                  <p className="text-sm text-gray-600">
-                    Machine Next PM Date: <strong className="text-gray-800">{formatDate(machineData.next_pm_date)}</strong>
+                <div className="bg-sunken border border-line rounded-lg p-3">
+                  <p className="text-sm text-content-muted">
+                    Machine Next PM Date: <strong className="text-content">{formatDate(machineData.next_pm_date)}</strong>
                   </p>
                 </div>
               )}
@@ -767,7 +767,7 @@ const WorkOrderView = () => {
               {loadingMachine && (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
-                  <p className="text-sm text-gray-600">Loading machine data...</p>
+                  <p className="text-sm text-content-muted">Loading machine data...</p>
                 </div>
               )}
             </div>
@@ -789,7 +789,7 @@ const WorkOrderView = () => {
           >
             {updatingSchedule ? (
               <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
                 Updating...
               </div>
             ) : (
@@ -811,15 +811,15 @@ const WorkOrderView = () => {
             <div className="flex flex-col gap-4">
               {/* Work Order Info */}
               <div>
-                <p className="text-sm text-gray-600 mb-1">Work Order</p>
-                <p className="text-lg font-bold text-gray-800">
+                <p className="text-sm text-content-muted mb-1">Work Order</p>
+                <p className="text-lg font-bold text-content">
                   {selectedWOForComplete.wo_number}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Machine</p>
-                <p className="text-base font-medium text-gray-800">
+                <p className="text-sm text-content-muted mb-1">Machine</p>
+                <p className="text-base font-medium text-content">
                   {selectedWOForComplete.machine_name || `Machine #${selectedWOForComplete.machine_id}`}
                 </p>
               </div>
@@ -827,8 +827,8 @@ const WorkOrderView = () => {
               {/* Scheduled Date */}
               {selectedWOForComplete.scheduled_date && (
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Scheduled Date</p>
-                  <p className="text-base font-medium text-gray-800">
+                  <p className="text-sm text-content-muted mb-1">Scheduled Date</p>
+                  <p className="text-base font-medium text-content">
                     {formatDate(selectedWOForComplete.scheduled_date)}
                   </p>
                 </div>
@@ -867,7 +867,7 @@ const WorkOrderView = () => {
           >
             {completingWorkOrder ? (
               <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
                 Completing...
               </div>
             ) : (
@@ -885,7 +885,7 @@ const WorkOrderView = () => {
         maxWidth="sm"
       >
         <DialogContent>
-          <p className="text-base text-gray-700">{confirmMessage}</p>
+          <p className="text-base text-content">{confirmMessage}</p>
         </DialogContent>
         <DialogActions>
           <Button
@@ -903,7 +903,7 @@ const WorkOrderView = () => {
           >
             {confirming ? (
               <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
                 Processing...
               </div>
             ) : (

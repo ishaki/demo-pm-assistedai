@@ -75,10 +75,10 @@ const MachineDetail = () => {
 
   if (error) {
     return (
-      <div className="bg-error-light border border-error rounded-lg p-4 flex items-start justify-between">
+      <div className="bg-error-soft border border-error-line rounded-lg p-4 flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <span className="material-icons-round text-error">error</span>
-          <span className="text-error font-medium">{error}</span>
+          <span className="material-icons-round text-error-on-soft">error</span>
+          <span className="text-error-on-soft font-medium">{error}</span>
         </div>
         <Button variant="text" size="sm" onClick={fetchMachineDetails}>Retry</Button>
       </div>
@@ -87,9 +87,9 @@ const MachineDetail = () => {
 
   if (!machine) {
     return (
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
-        <span className="material-icons-round text-blue-600">info</span>
-        <span className="text-blue-800">Machine not found</span>
+      <div className="bg-info-soft border border-info-line rounded-lg p-4 flex items-center gap-3">
+        <span className="material-icons-round text-info-on-soft">info</span>
+        <span className="text-info-on-soft">Machine not found</span>
       </div>
     );
   }
@@ -97,18 +97,18 @@ const MachineDetail = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 -mx-6 -mt-6 px-6 py-4 sticky top-0 z-10">
+      <div className="bg-surface border-b border-line -mx-6 -mt-6 px-6 py-4 sticky top-0 z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <button
               onClick={() => navigate('/machines')}
-              className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-primary transition-colors mb-2"
+              className="inline-flex items-center text-sm font-medium text-content-muted hover:text-primary-on-soft transition-colors mb-2"
             >
               <span className="material-icons-round text-base mr-1">arrow_back</span>
               BACK TO LIST
             </button>
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold text-gray-800">{machine.machine_id}</h1>
+              <h1 className="text-3xl font-bold text-content">{machine.machine_id}</h1>
               <Badge variant={getPMStatusVariant(machine.pm_status)}>
                 {getPMStatusLabel(machine.pm_status)}
               </Badge>
@@ -130,33 +130,33 @@ const MachineDetail = () => {
         {/* Machine Information */}
         <Card>
           <CardContent>
-            <div className="flex items-center border-b border-gray-200 pb-4 mb-6">
-              <span className="material-icons-round text-gray-600 mr-2">precision_manufacturing</span>
-              <h2 className="text-lg font-semibold text-gray-800">Machine Information</h2>
+            <div className="flex items-center border-b border-line pb-4 mb-6">
+              <span className="material-icons-round text-content-muted mr-2">precision_manufacturing</span>
+              <h2 className="text-lg font-semibold text-content">Machine Information</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Machine ID</label>
-                <p className="text-base font-medium text-gray-800">{machine.machine_id}</p>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Machine ID</label>
+                <p className="text-base font-medium text-content">{machine.machine_id}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Name</label>
-                <p className="text-base font-medium text-gray-800">{machine.name}</p>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Name</label>
+                <p className="text-base font-medium text-content">{machine.name}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Location</label>
-                <p className="text-base font-medium text-gray-800">{machine.location}</p>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Location</label>
+                <p className="text-base font-medium text-content">{machine.location}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Status</label>
-                <span className="inline-flex items-center text-sm font-medium text-success">
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Status</label>
+                <span className="inline-flex items-center text-sm font-medium text-success-on-soft">
                   <span className="w-2 h-2 bg-success rounded-full mr-2"></span>
                   Active
                 </span>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Description</label>
-                <p className="text-sm text-gray-600">{machine.description || 'N/A'}</p>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Description</label>
+                <p className="text-sm text-content-muted">{machine.description || 'N/A'}</p>
               </div>
             </div>
           </CardContent>
@@ -165,38 +165,38 @@ const MachineDetail = () => {
         {/* PM Schedule */}
         <Card>
           <CardContent>
-            <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
+            <div className="flex items-center justify-between border-b border-line pb-4 mb-6">
               <div className="flex items-center">
-                <span className="material-icons-round text-gray-600 mr-2">schedule</span>
-                <h2 className="text-lg font-semibold text-gray-800">PM Schedule</h2>
+                <span className="material-icons-round text-content-muted mr-2">schedule</span>
+                <h2 className="text-lg font-semibold text-content">PM Schedule</h2>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">PM Frequency</label>
-                <p className="text-base font-medium text-gray-800">{machine.pm_frequency}</p>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">PM Frequency</label>
+                <p className="text-base font-medium text-content">{machine.pm_frequency}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">PM Status</label>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">PM Status</label>
                 <Badge variant={getPMStatusVariant(machine.pm_status)}>
                   {getPMStatusLabel(machine.pm_status)}
                 </Badge>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Last PM Date</label>
-                <p className="text-base font-medium text-gray-800">{formatDate(machine.last_pm_date)}</p>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Last PM Date</label>
+                <p className="text-base font-medium text-content">{formatDate(machine.last_pm_date)}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Next PM Date</label>
-                <p className="text-base font-medium text-gray-800">{formatDate(machine.next_pm_date)}</p>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Next PM Date</label>
+                <p className="text-base font-medium text-content">{formatDate(machine.next_pm_date)}</p>
               </div>
               <div className="md:col-span-2 mt-2">
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 flex items-center justify-between">
+                <div className="bg-info-soft rounded-lg p-4 border border-info-line flex items-center justify-between">
                   <div>
-                    <label className="block text-xs font-medium text-blue-600 uppercase tracking-wider">Days Until PM</label>
-                    <p className="text-3xl font-bold text-primary">{formatDaysUntilPM(machine.days_until_pm)}</p>
+                    <label className="block text-xs font-medium text-info-on-soft uppercase tracking-wider">Days Until PM</label>
+                    <p className="text-3xl font-bold text-primary-on-soft">{formatDaysUntilPM(machine.days_until_pm)}</p>
                   </div>
-                  <span className="material-icons-round text-primary opacity-20 text-5xl">hourglass_empty</span>
+                  <span className="material-icons-round text-primary-on-soft opacity-20 text-5xl">hourglass_empty</span>
                 </div>
               </div>
             </div>
@@ -208,25 +208,25 @@ const MachineDetail = () => {
         {/* Supplier Information */}
         <Card>
           <CardContent className="flex flex-col h-full">
-            <div className="flex items-center border-b border-gray-200 pb-4 mb-6">
-              <span className="material-icons-round text-gray-600 mr-2">business</span>
-              <h2 className="text-lg font-semibold text-gray-800">Supplier Information</h2>
+            <div className="flex items-center border-b border-line pb-4 mb-6">
+              <span className="material-icons-round text-content-muted mr-2">business</span>
+              <h2 className="text-lg font-semibold text-content">Supplier Information</h2>
             </div>
             <div className="grid grid-cols-1 gap-y-6">
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Assigned Supplier</label>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Assigned Supplier</label>
                 <div className="flex items-center">
-                  <div className="w-8 h-8 rounded bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 mr-3">
+                  <div className="w-8 h-8 rounded bg-line flex items-center justify-center text-xs font-bold text-content-muted mr-3">
                     {machine.assigned_supplier?.substring(0, 2).toUpperCase() || 'N/A'}
                   </div>
-                  <p className="text-base font-medium text-gray-800">{machine.assigned_supplier || 'N/A'}</p>
+                  <p className="text-base font-medium text-content">{machine.assigned_supplier || 'N/A'}</p>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Supplier Email</label>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Supplier Email</label>
                 <a
                   href={`mailto:${machine.supplier_email}`}
-                  className="text-base font-medium text-primary hover:underline"
+                  className="text-base font-medium text-primary-on-soft hover:underline"
                 >
                   {machine.supplier_email || 'N/A'}
                 </a>
@@ -238,10 +238,10 @@ const MachineDetail = () => {
         {/* Active Work Orders */}
         <Card>
           <CardContent className="flex flex-col h-full">
-            <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
+            <div className="flex items-center justify-between border-b border-line pb-4 mb-6">
               <div className="flex items-center">
-                <span className="material-icons-round text-gray-600 mr-2">assignment</span>
-                <h2 className="text-lg font-semibold text-gray-800">
+                <span className="material-icons-round text-content-muted mr-2">assignment</span>
+                <h2 className="text-lg font-semibold text-content">
                   Active Work Orders ({machine.work_orders?.length || 0})
                 </h2>
               </div>
@@ -251,33 +251,33 @@ const MachineDetail = () => {
                 machine.work_orders.map((wo) => (
                   <div
                     key={wo.id}
-                    className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group mb-3"
+                    className="border border-line rounded-lg p-4 bg-sunken hover:bg-sunken transition-colors cursor-pointer group mb-3"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-sm font-bold text-gray-800 group-hover:text-primary transition-colors">
+                      <h3 className="text-sm font-bold text-content group-hover:text-primary-on-soft transition-colors">
                         {wo.wo_number}
                       </h3>
                       <Badge variant={getWorkOrderStatusVariant(wo.status)} size="sm">
                         {getWorkOrderStatusLabel(wo.status)}
                       </Badge>
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">Created: {formatDateTime(wo.created_at)}</p>
+                    <p className="text-xs text-content-muted mb-2">Created: {formatDateTime(wo.created_at)}</p>
                     {wo.priority && (
                       <div className="flex items-center">
-                        <span className="text-xs font-medium text-gray-600 mr-2">Priority:</span>
-                        <span className="text-xs font-bold text-error">{wo.priority}</span>
+                        <span className="text-xs font-medium text-content-muted mr-2">Priority:</span>
+                        <span className="text-xs font-bold text-error-on-soft">{wo.priority}</span>
                       </div>
                     )}
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-600">No active work orders</p>
+                <p className="text-sm text-content-muted">No active work orders</p>
               )}
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="mt-6 pt-4 border-t border-line">
               <button
                 onClick={() => navigate('/work-orders')}
-                className="w-full py-2 px-4 border border-primary text-primary hover:bg-primary hover:text-white rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary uppercase tracking-wide"
+                className="w-full py-2 px-4 border border-primary text-primary-on-soft hover:bg-primary hover:text-primary-contrast rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary uppercase tracking-wide"
               >
                 View All Work Orders
               </button>
@@ -288,9 +288,9 @@ const MachineDetail = () => {
 
       {/* Maintenance History */}
       <Card>
-        <div className="px-6 py-5 border-b border-gray-200 flex items-center">
-          <span className="material-icons-round text-gray-600 mr-2">history</span>
-          <h2 className="text-lg font-semibold text-gray-800">Maintenance History</h2>
+        <div className="px-6 py-5 border-b border-line flex items-center">
+          <span className="material-icons-round text-content-muted mr-2">history</span>
+          <h2 className="text-lg font-semibold text-content">Maintenance History</h2>
         </div>
         {machine.maintenance_history && machine.maintenance_history.length > 0 ? (
           <Table>
@@ -315,7 +315,7 @@ const MachineDetail = () => {
                   </TableCell>
                   <TableCell>{history.performed_by || 'N/A'}</TableCell>
                   <TableCell>
-                    <span className="text-sm text-gray-600">{history.notes || 'N/A'}</span>
+                    <span className="text-sm text-content-muted">{history.notes || 'N/A'}</span>
                   </TableCell>
                 </TableRow>
               ))}
@@ -323,7 +323,7 @@ const MachineDetail = () => {
           </Table>
         ) : (
           <div className="px-6 py-8 text-center">
-            <p className="text-sm text-gray-600">No maintenance history available</p>
+            <p className="text-sm text-content-muted">No maintenance history available</p>
           </div>
         )}
       </Card>
@@ -339,33 +339,33 @@ const MachineDetail = () => {
           {aiDecision && (
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Decision</p>
+                <p className="text-sm text-content-muted mb-1">Decision</p>
                 <Badge variant={getDecisionVariant(aiDecision.decision)}>
                   {getDecisionLabel(aiDecision.decision)}
                 </Badge>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Priority</p>
-                <p className="text-base font-semibold text-gray-800">{aiDecision.priority}</p>
+                <p className="text-sm text-content-muted mb-1">Priority</p>
+                <p className="text-base font-semibold text-content">{aiDecision.priority}</p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Confidence</p>
+                <p className="text-sm text-content-muted mb-1">Confidence</p>
                 <Badge variant={getConfidenceVariant(aiDecision.confidence)}>
                   {(aiDecision.confidence * 100).toFixed(0)}%
                 </Badge>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Explanation</p>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                  <p className="text-sm text-gray-700">{aiDecision.explanation}</p>
+                <p className="text-sm text-content-muted mb-1">Explanation</p>
+                <div className="bg-sunken border border-line rounded-lg p-3">
+                  <p className="text-sm text-content">{aiDecision.explanation}</p>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-gray-200">
-                <p className="text-xs text-gray-500">
+              <div className="pt-2 border-t border-line">
+                <p className="text-xs text-content-subtle">
                   Provider: {aiDecision.llm_provider} | Model: {aiDecision.llm_model}
                 </p>
               </div>

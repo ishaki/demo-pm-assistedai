@@ -1,69 +1,71 @@
 /** @type {import('tailwindcss').Config} */
+
+/**
+ * Colors resolve through CSS variables (defined in src/index.css) that hold an
+ * "R G B" channel triple. Writing them as rgb(var(--x) / <alpha-value>) keeps
+ * Tailwind's opacity modifiers working, so `bg-surface/50` still does what you
+ * expect.
+ *
+ * The payoff: a utility like `bg-surface` is authored once and resolves
+ * correctly in both themes. Components don't need a `dark:` twin on every
+ * class, and anything added later picks up dark mode for free.
+ */
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
+/** Every status family exposes the same five slots, so they're interchangeable. */
+const family = (name) => ({
+  DEFAULT: token(name),
+  hover: token(`${name}-hover`),
+  contrast: token(`${name}-contrast`), // text/icons sitting ON the solid fill
+  soft: token(`${name}-soft`), // tinted panel background
+  light: token(`${name}-soft`), // legacy alias for `soft`
+  'on-soft': token(`${name}-on-soft`), // text/icons on `soft` or on the canvas
+  line: token(`${name}-line`), // border that pairs with `soft`
+});
+
 module.exports = {
+  darkMode: 'class',
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
       colors: {
-        // InnoMaint color palette
-        primary: {
-          DEFAULT: '#0ea5e9', // Sky blue
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+        // Surfaces, ordered back to front.
+        canvas: token('canvas'),   // the page itself
+        surface: token('surface'), // cards, table bodies
+        raised: token('raised'),   // sidebar, dialogs, popovers
+        sunken: token('sunken'),   // table headers, inset wells
+
+        // Text, in descending emphasis.
+        content: {
+          DEFAULT: token('content'),
+          muted: token('content-muted'),
+          subtle: token('content-subtle'),
         },
-        success: {
-          DEFAULT: '#10b981',
-          light: '#d1fae5',
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#10b981',
-          600: '#059669',
+
+        // Hairlines and dividers.
+        line: {
+          DEFAULT: token('line'),
+          strong: token('line-strong'),
         },
-        error: {
-          DEFAULT: '#ef4444',
-          light: '#fee2e2',
-          50: '#fef2f2',
-          100: '#fee2e2',
-          500: '#ef4444',
-          600: '#dc2626',
-        },
-        warning: {
-          DEFAULT: '#f59e0b',
-          light: '#fef3c7',
-          50: '#fffbeb',
-          100: '#fef3c7',
-          500: '#f59e0b',
-          600: '#d97706',
-        },
-        gray: {
-          50: '#f9fafb',
-          100: '#f3f4f6',
-          200: '#e5e7eb',
-          300: '#d1d5db',
-          400: '#9ca3af',
-          500: '#6b7280',
-          600: '#4b5563',
-          700: '#374151',
-          800: '#1f2937',
-          900: '#111827',
-        }
+
+        primary: family('primary'),
+        success: family('success'),
+        error: family('error'),
+        warning: family('warning'),
+        info: family('info'),
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
-        'card': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-        'card-hover': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+        // Shadows carry the theme too: near-invisible on dark surfaces unless
+        // they get deeper and more opaque.
+        'card': 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
+        'soft': 'var(--shadow-soft)',
+        'raised': 'var(--shadow-raised)',
       },
       keyframes: {
         'slide-in-right': {

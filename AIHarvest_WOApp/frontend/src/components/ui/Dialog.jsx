@@ -21,7 +21,9 @@ export const Dialog = ({ open, onClose, title, children, maxWidth = 'sm' }) => {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
+          {/* Fixed slate rather than a token: the scrim needs to darken the page
+              in both themes, so it must not follow the surface colors. */}
+          <div className="fixed inset-0 bg-slate-900/60" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -37,12 +39,12 @@ export const Dialog = ({ open, onClose, title, children, maxWidth = 'sm' }) => {
             >
               <HeadlessDialog.Panel
                 className={clsx(
-                  'w-full transform overflow-hidden rounded-lg bg-white shadow-xl transition-all',
+                  'w-full transform overflow-hidden rounded-lg bg-raised border border-line shadow-raised transition-all',
                   maxWidthClasses[maxWidth]
                 )}
               >
                 {title && (
-                  <HeadlessDialog.Title className="px-6 py-4 border-b border-gray-200 text-lg font-semibold text-gray-800">
+                  <HeadlessDialog.Title className="px-6 py-4 border-b border-line text-lg font-semibold text-content">
                     {title}
                   </HeadlessDialog.Title>
                 )}
@@ -62,7 +64,7 @@ export const DialogContent = ({ children, className = '' }) => {
 
 export const DialogActions = ({ children, className = '' }) => {
   return (
-    <div className={clsx('px-6 py-4 bg-gray-50 flex justify-end gap-3', className)}>
+    <div className={clsx('px-6 py-4 bg-sunken border-t border-line flex justify-end gap-3', className)}>
       {children}
     </div>
   );

@@ -4,7 +4,7 @@ import clsx from 'clsx';
 export const Table = ({ children, className = '' }) => {
   return (
     <div className="overflow-x-auto">
-      <table className={clsx('min-w-full divide-y divide-gray-200', className)}>
+      <table className={clsx('min-w-full divide-y divide-line', className)}>
         {children}
       </table>
     </div>
@@ -12,11 +12,11 @@ export const Table = ({ children, className = '' }) => {
 };
 
 export const TableHead = ({ children, className = '' }) => {
-  return <thead className={clsx('bg-gray-50', className)}>{children}</thead>;
+  return <thead className={clsx('bg-sunken', className)}>{children}</thead>;
 };
 
 export const TableBody = ({ children, className = '' }) => {
-  return <tbody className={clsx('bg-white divide-y divide-gray-200', className)}>{children}</tbody>;
+  return <tbody className={clsx('bg-surface divide-y divide-line', className)}>{children}</tbody>;
 };
 
 export const TableRow = ({ children, hover = false, onClick, className = '' }) => {
@@ -24,7 +24,7 @@ export const TableRow = ({ children, hover = false, onClick, className = '' }) =
     <tr
       onClick={onClick}
       className={clsx(
-        hover && 'hover:bg-gray-50 cursor-pointer transition-colors',
+        hover && 'hover:bg-sunken cursor-pointer transition-colors',
         className
       )}
     >
@@ -45,7 +45,7 @@ export const TableCell = ({ children, header = false, align = 'left', className 
     <Component
       className={clsx(
         'px-6 py-4',
-        header ? 'text-xs font-semibold text-gray-700 uppercase tracking-wider' : 'text-sm text-gray-800',
+        header ? 'text-xs font-semibold text-content-muted uppercase tracking-wider' : 'text-sm text-content',
         alignClasses[align],
         className
       )}
@@ -59,7 +59,7 @@ export const TableSortLabel = ({ children, active, direction, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="group inline-flex items-center gap-1 hover:text-gray-900 focus:outline-none"
+      className="group inline-flex items-center gap-1 hover:text-content focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
     >
       {children}
       <span className={clsx(
@@ -85,13 +85,13 @@ export const TablePagination = ({
   const endIndex = Math.min((page + 1) * rowsPerPage, count);
 
   return (
-    <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200 bg-white">
+    <div className="px-6 py-4 flex items-center justify-between border-t border-line bg-surface">
       <div className="flex items-center gap-4">
-        <span className="text-sm text-gray-600">Rows per page:</span>
+        <span className="text-sm text-content-muted">Rows per page:</span>
         <select
           value={rowsPerPage}
           onChange={(e) => onRowsPerPageChange({ target: { value: parseInt(e.target.value) } })}
-          className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="border border-line-strong bg-surface text-content rounded px-2 py-1 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {rowsPerPageOptions.map(option => (
             <option key={option} value={option}>{option}</option>
@@ -100,21 +100,23 @@ export const TablePagination = ({
       </div>
 
       <div className="flex items-center gap-4">
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-content-muted">
           {startIndex}-{endIndex} of {count}
         </span>
         <div className="flex gap-1">
           <button
             onClick={() => onPageChange(null, page - 1)}
             disabled={page === 0}
-            className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Previous page"
+            className="p-1 rounded text-content-muted hover:bg-sunken hover:text-content disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <span className="material-icons-round text-xl">chevron_left</span>
           </button>
           <button
             onClick={() => onPageChange(null, page + 1)}
             disabled={page >= totalPages - 1}
-            className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Next page"
+            className="p-1 rounded text-content-muted hover:bg-sunken hover:text-content disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <span className="material-icons-round text-xl">chevron_right</span>
           </button>

@@ -3,11 +3,42 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="theme-color" content="#f5f7fa" />
     <meta
       name="description"
       content="AI-Assisted Preventive Maintenance System"
     />
+
+    <!--
+      Resolve the theme before the first paint, otherwise the app renders one
+      frame of light mode on every load. Must stay ahead of the stylesheets,
+      and the storage key must match STORAGE_KEY in src/contexts/ThemeContext.jsx.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = window.localStorage.getItem('aiharvest-theme');
+          var theme =
+            stored === 'dark' || stored === 'light'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+
+          var root = document.documentElement;
+          if (theme === 'dark') root.classList.add('dark');
+          root.style.colorScheme = theme;
+
+          if (theme === 'dark') {
+            document
+              .querySelector('meta[name="theme-color"]')
+              .setAttribute('content', '#0b1220');
+          }
+        } catch (e) {
+          /* No storage or no matchMedia: fall through to light. */
+        }
+      })();
+    </script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
