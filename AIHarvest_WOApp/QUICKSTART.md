@@ -22,11 +22,14 @@ nano .env  # Update with your values
 
 ### 3. Deploy
 ```bash
-chmod +x deploy.sh
-./deploy.sh
+chmod +x deploy-app.sh
+./deploy-app.sh --with-db-init      # first time: also creates the tables
 ```
 
 Done! Open `http://YOUR_SERVER_IP:3000` in browser.
+
+For every deployment after the first, drop the flag — `./deploy-app.sh` alone
+deploys backend + frontend and issues no database DDL at all.
 
 ---
 

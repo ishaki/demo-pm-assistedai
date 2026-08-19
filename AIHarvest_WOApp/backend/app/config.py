@@ -12,6 +12,18 @@ class Settings(BaseSettings):
     # Database Configuration (MS SQL Server)
     DATABASE_URL: str = "mssql+pyodbc://sa:YourStrong!Passw0rd@mssql:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
 
+    # Schema management. When True, startup calls Base.metadata.create_all(),
+    # which adds any missing tables. That is additive -- it never drops or
+    # alters an existing table -- but it is still DDL issued against a live
+    # database by whoever happens to restart the app.
+    #
+    # Set False to make the application completely read/write-data-only: it
+    # issues no schema statements at all. Tables must then already exist, or be
+    # created out of band with `python scripts/init_db.py`.
+    #
+    # deploy-app.sh sets this to False unless run with --with-db-init.
+    DB_AUTO_CREATE_TABLES: bool = True
+
     # LLM Configuration
     LLM_PROVIDER: str = "openai"  # Options: openai, claude, gemini
     OPENAI_API_KEY: Optional[str] = ""

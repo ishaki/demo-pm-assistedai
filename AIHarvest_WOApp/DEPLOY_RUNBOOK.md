@@ -10,7 +10,7 @@ frontend) to the Linux Docker host at `192.168.0.33`.
 | FastAPI backend (`:8000`) | Yes | Built from `backend/Dockerfile.prod` |
 | React frontend (`:3000`) | Yes | Built from `frontend/Dockerfile`, served by nginx |
 | n8n workflows (`:5678`) | **No** | Already running on a separate server — see [Step 8](#step-8-point-the-existing-n8n-at-this-backend) |
-| MS SQL Server | **No** | External. You must supply a reachable instance — see [Step 4](#step-4-decide-where-the-database-lives) |
+| MS SQL Server | **No** | External. You must supply a reachable instance — see [Step 4](#step-4-decide-where-the-database-lives). `deploy-app.sh` never creates or alters it |
 
 Everything below assumes you are starting from your own workstation, not the
 server.
@@ -279,51 +279,92 @@ fail after deployment, check this before debugging anything else.
 
 ## Step 6 — Deploy
 
+There are two scripts. Use `deploy-app.sh` unless you have a specific reason
+not to.
+
+| Script | What it does |
+|---|---|
+| `deploy-app.sh` | **App only.** Builds and recreates backend + frontend, and issues **no database DDL at all**. Every other container on the host — n8n, a local SQL Server — keeps running untouched. |
+| `deploy.sh` | The original. Runs `docker compose down` first, which stops **every** service in the compose file including n8n, and lets the backend create missing tables on startup. Can also bring up n8n via `DEPLOY_SERVICES`. Note the `DATABASE_URL` parsing fault in [Troubleshooting](#deploysh-says-database_url-is-not-set-when-it-plainly-is). |
+
+**First deployment**, against an empty database — the tables need creating:
+
 ```bash
-chmod +x deploy.sh
-./deploy.sh
+chmod +x deploy-app.sh
+./deploy-app.sh --with-db-init
 ```
 
-The script validates `.env`, builds the images, starts **backend and frontend
-only**, and health-checks both. The build takes 5–10 minutes on first run —
-installing the Microsoft ODBC driver is the slow part.
+**Every deployment after that** — the schema already exists, so leave it alone:
 
-It deliberately does **not** start n8n, which runs on your other server.
-Starting a second n8n here would give you two schedulers racing on the same
-webhooks. If you ever do want it on this host:
+```bash
+./deploy-app.sh
+```
+
+Without `--with-db-init` the backend runs with `DB_AUTO_CREATE_TABLES=False`: no
+`CREATE TABLE`, no `ALTER`, no seed script, no new database. The only database
+traffic is a read-only `SELECT 1` liveness probe. The script prints which mode
+it resolved before doing anything, and the health check afterwards reports what
+the running backend actually does — so you can confirm rather than assume.
+
+The build takes 5–10 minutes on the first run; installing the Microsoft ODBC
+driver is the slow part. Later runs reuse the layer cache. Changed source and
+changed build args invalidate it on their own, so `--no-cache` is only for when
+you suspect a stale cache.
+
+Neither script starts n8n by default, since it runs on your other server — two
+schedulers would race on the same webhooks. `deploy-app.sh` cannot start it at
+all. If you do want it on this host, use the original script:
 
 ```bash
 DEPLOY_SERVICES="backend frontend n8n" ./deploy.sh
 ```
+
+Other `deploy-app.sh` options: `--backend-only`, `--frontend-only`, `--no-cache`,
+and `--skip-build` (recreate the containers so a changed `.env` is re-read,
+without rebuilding). `./deploy-app.sh --help` lists them all.
 
 <details>
 <summary>Manual equivalent, if you would rather not use the script</summary>
 
 ```bash
 docker compose -f docker-compose.prod.yml build backend frontend
-docker compose -f docker-compose.prod.yml up -d backend frontend
-docker compose -f docker-compose.prod.yml ps
+DB_AUTO_CREATE_TABLES=False docker compose -f docker-compose.prod.yml \
+  up -d --no-deps --force-recreate backend frontend
+docker compose -f docker-compose.prod.yml ps backend frontend
 ```
 
-Note the explicit service names. A bare `up -d` would also start n8n.
+Three things to keep: the explicit service names, because a bare `up -d` would
+also start n8n; `DB_AUTO_CREATE_TABLES=False`, which is what suppresses the
+startup DDL and is baked into the container when it is created; and the absence
+of `down`, which would stop every service in the file, n8n included.
 </details>
 
 ---
 
 ## Step 7 — Initialize and seed the database
 
-Tables are created automatically on backend startup. Confirm:
+**First deployment only.** `deploy-app.sh` deliberately does not create tables
+unless asked, so this is now an explicit step.
+
+If you deployed with `--with-db-init`, the backend created them on startup.
+Confirm:
 
 ```bash
 docker compose -f docker-compose.prod.yml logs backend | grep -i "Database initialization"
 # expected: Database initialization completed
 ```
 
-If tables are missing, create them explicitly:
+If you deployed without it, the log says so instead, and you create the tables
+yourself. Safe to re-run — it only adds what is missing:
 
 ```bash
+docker compose -f docker-compose.prod.yml logs backend | grep -i "skipping automatic table creation"
 docker compose -f docker-compose.prod.yml exec backend python scripts/init_db.py
 ```
+
+Neither route alters or drops an existing table. But `create_all` is **not a
+migration**: a new column on an existing table is added by neither route, and
+needs a manual `ALTER TABLE`.
 
 **Demo data — skip both commands on a deployment holding real data.** They are
 destructive: each clears its tables first.
@@ -447,7 +488,7 @@ docker stats --no-stream
 
 | What changed | Action |
 |---|---|
-| `ANTHROPIC_API_KEY`, `LLM_PROVIDER`, `LLM_MODEL`, `DATABASE_URL`, `CORS_ORIGINS`, SMTP | `docker compose -f docker-compose.prod.yml up -d backend` — recreates the container so it re-reads `.env`. A `restart` is **not** enough; it reuses the old environment. |
+| `ANTHROPIC_API_KEY`, `LLM_PROVIDER`, `LLM_MODEL`, `DATABASE_URL`, `CORS_ORIGINS`, SMTP | `./deploy-app.sh --backend-only --skip-build` — recreates the container so it re-reads `.env`, with the schema gate still off. A `restart` is **not** enough; it reuses the old environment. A bare `up -d backend` also works but re-enables table auto-creation, since the flag is only set by the script. |
 | `REACT_APP_API_URL` | Rebuild the frontend: `docker compose -f docker-compose.prod.yml build --no-cache frontend && docker compose -f docker-compose.prod.yml up -d frontend`. It is compiled into the bundle. |
 | Application code | Re-deploy: see below. |
 
@@ -463,8 +504,11 @@ cd ~ && tar xzf aiharvest-wo-app-<new-date>.tar.gz
 cp ~/aiharvest.env.backup ~/aiharvest-wo-app/AIHarvest_WOApp/.env
 
 cd ~/aiharvest-wo-app/AIHarvest_WOApp
-./deploy.sh
+./deploy-app.sh
 ```
+
+An app upgrade needs no database step. `deploy-app.sh` issues no DDL, so the
+schema you have is the schema you keep.
 
 ### Rollback
 
@@ -476,8 +520,8 @@ docker images | grep aiharvest
 ```
 
 If the previous image is gone, re-extract the previous package and re-run
-`./deploy.sh`. Database schema changes are additive (`create_all` only adds
-tables), so rolling the app back does not require a database restore.
+`./deploy-app.sh`. Rolling the app back never requires a database restore: the
+app only ever adds tables, and only when asked to.
 
 ---
 
@@ -519,6 +563,28 @@ curl -s -X POST http://localhost:8000/api/v1/ai/decision/1
 | `credit balance is too low` | Valid key, unfunded account. Add credit. |
 | `authentication_error` | Key is wrong, revoked, or truncated on copy. Check its length. |
 | 400 mentioning `temperature` | An older `claude_provider.py` is deployed. This package's version sends no temperature. |
+
+### `deploy.sh` says `DATABASE_URL is not set` when it plainly is
+
+`deploy.sh` reads `.env` with `source`, which applies shell rules to a file that
+is not a shell script. The connection string in `.env.production.example` is
+unquoted and contains an ampersand:
+
+```env
+DATABASE_URL=mssql+pyodbc://...?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+```
+
+`source` reads that as "assign up to the `&`, in the background", so the value
+never reaches the script and validation rejects a perfectly good `.env`. Two
+ways out — either quote the value:
+
+```env
+DATABASE_URL="mssql+pyodbc://...&TrustServerCertificate=yes"
+```
+
+or use `deploy-app.sh`, which parses `.env` literally the way Compose does and
+is unaffected. Compose itself was never confused by this, so a container that
+did start has the correct URL.
 
 ### Database connection failed
 
@@ -576,3 +642,4 @@ Either stop the conflicting process or remap the host side in
 | `DOMAIN_CONFIGURATION.md` | Custom domains, TLS/HTTPS, subdomain layout |
 | `LOCAL_INSTALLATION_GUIDE.md` | Running without Docker, for development |
 | `.env.production.example` | Every supported variable, annotated |
+| `./deploy-app.sh --help` | App-only deployment options |

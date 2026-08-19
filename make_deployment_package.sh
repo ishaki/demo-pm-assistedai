@@ -35,6 +35,7 @@ echo ""
 for required in \
     AIHarvest_WOApp/docker-compose.prod.yml \
     AIHarvest_WOApp/deploy.sh \
+    AIHarvest_WOApp/deploy-app.sh \
     AIHarvest_WOApp/DEPLOY_RUNBOOK.md \
     AIHarvest_WOApp/.env.production.example \
     AIHarvest_WOApp/backend/Dockerfile.prod \

@@ -119,12 +119,24 @@ async def startup_event():
     else:
         logger.warning("Database connection failed - check configuration")
 
-    # Initialize database tables
-    try:
-        init_db()
-        logger.info("Database initialization completed")
-    except Exception as e:
-        logger.error(f"Database initialization failed: {e}")
+    # Initialize database tables.
+    #
+    # Gated deliberately. create_all() only adds missing tables and never drops
+    # or alters an existing one, but it is still DDL against a live database --
+    # and it runs once per uvicorn worker on every restart. Deployments that
+    # must not touch the schema set DB_AUTO_CREATE_TABLES=False and create
+    # tables out of band with scripts/init_db.py. See deploy-app.sh.
+    if settings.DB_AUTO_CREATE_TABLES:
+        try:
+            init_db()
+            logger.info("Database initialization completed")
+        except Exception as e:
+            logger.error(f"Database initialization failed: {e}")
+    else:
+        logger.info(
+            "DB_AUTO_CREATE_TABLES=False - skipping automatic table creation; "
+            "this process will make no schema changes to the database"
+        )
 
 
 # Shutdown event
@@ -147,6 +159,7 @@ async def health_check():
         "app_name": settings.APP_NAME,
         "version": settings.APP_VERSION,
         "database": "connected" if db_status else "disconnected",
+        "db_auto_create_tables": settings.DB_AUTO_CREATE_TABLES,
         "llm_provider": settings.LLM_PROVIDER
     }
 

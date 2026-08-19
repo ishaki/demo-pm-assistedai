@@ -166,7 +166,10 @@ docker-compose -f docker-compose.prod.yml logs n8n
 
 ### Step 5: Initialize Database (First Time Only)
 
-The database tables should be created automatically on first startup. Verify by checking backend logs:
+Tables are created on first startup **only if the backend is allowed to**. It
+is controlled by `DB_AUTO_CREATE_TABLES`, which defaults to `True`; `deploy-app.sh`
+sets it to `False` unless run with `--with-db-init`, so that a routine app
+deployment issues no DDL. Verify by checking backend logs:
 
 ```bash
 docker-compose -f docker-compose.prod.yml logs backend | grep "Database initialization"
