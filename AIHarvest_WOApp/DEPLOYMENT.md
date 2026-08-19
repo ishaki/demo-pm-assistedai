@@ -78,11 +78,23 @@ nano .env
 
 **Critical values to update:**
 - `DATABASE_URL` - Your SQL Server connection string
-- `OPENAI_API_KEY` or relevant LLM API key
+- `LLM_PROVIDER` - One of `openai` | `claude` | `gemini`. These are the only
+  accepted values; `anthropic` and `google` fail at startup with
+  `Unknown LLM provider`.
+- The API key matching that provider - `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or
+  `GOOGLE_API_KEY`
+- `LLM_MODEL` - Optional. Blank uses the provider default (`claude` →
+  `claude-sonnet-5`, `openai` → `gpt-4`, `gemini` → `gemini-1.5-pro`)
 - `SMTP_USERNAME` and `SMTP_PASSWORD` - For email notifications
-- `REACT_APP_API_URL` - Should point to your test server IP:8000/api/v1
+- `REACT_APP_API_URL` - Should point to your test server IP:8000/api/v1.
+  Compiled into the frontend bundle at build time, so changing it needs a
+  frontend rebuild, not a restart.
 - `CORS_ORIGINS` - Should include your test server IP:3000
 - `N8N_PASSWORD` - Change from default!
+
+> Deploying to a specific server? `DEPLOY_RUNBOOK.md` is a concrete
+> start-to-finish runbook for the app-only deployment, from the SSH connection
+> onward, and covers the AI provider settings in more detail.
 
 **Example for test server at 192.168.1.100:**
 ```env

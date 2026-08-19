@@ -159,14 +159,29 @@ docker exec aiharvest_mssql /opt/mssql-tools18/bin/sqlcmd \
   -Q "IF DB_ID('aiharvest_pm') IS NULL CREATE DATABASE aiharvest_pm;"
 ```
 
-Because the app containers run on their own Compose network, they reach this
-container via the host address, not `localhost`. Use `172.17.0.1` (the default
-Docker bridge gateway) in `DATABASE_URL`, or attach it to the app network:
+The backend runs in its own Compose network, so `localhost` in `DATABASE_URL`
+would point at the *backend container*, not the database. Attach the database
+container to the app network and address it by name — do this **after** Step 6,
+since the network is created by the first `docker compose up`:
 
 ```bash
+docker network ls | grep agenticai          # find the exact name
 docker network connect aiharvest_woapp_agenticai-demo-network aiharvest_mssql
-# then DATABASE_URL can use the hostname: aiharvest_mssql
 ```
+
+Then in `.env`:
+
+```env
+DATABASE_URL=mssql+pyodbc://sa:<password>@aiharvest_mssql:1433/aiharvest_pm?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+```
+
+Recreate the backend afterwards so it picks up the change:
+`docker compose -f docker-compose.prod.yml up -d backend`.
+
+> Prefer this over pointing at a host-gateway IP such as `172.17.0.1`. That
+> address is the *default* bridge gateway; a Compose project gets its own
+> user-defined network with a different gateway, so a hard-coded IP often
+> silently fails to route.
 
 ---
 
