@@ -27,6 +27,36 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# Catch-all for unhandled exceptions.
+#
+# This is deliberately a middleware and not an @app.exception_handler(Exception).
+# Starlette installs a handler registered against Exception on ServerErrorMiddleware,
+# which wraps CORSMiddleware from the outside -- so its response goes out with no
+# Access-Control-Allow-Origin header. The browser then blocks it, and the caller
+# sees an opaque "Network Error" with no status instead of the real message.
+#
+# Registration order matters: add_middleware() prepends, so whatever is registered
+# FIRST ends up innermost. This must stay above the CORSMiddleware call below so
+# that CORS wraps it and can attach the headers to the 500 on the way out.
+#
+# Handlers for specific exception classes (RequestValidationError, SQLAlchemyError)
+# do not have this problem -- those run on the inner ExceptionMiddleware, already
+# inside CORS -- so they are left as decorators further down.
+@app.middleware("http")
+async def catch_unhandled_exceptions(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as exc:
+        logger.exception(f"Unexpected error handling {request.method} {request.url.path}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "detail": str(exc),
+                "message": "An unexpected error occurred"
+            },
+        )
+
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -72,16 +102,8 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
     )
 
 
-@app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
-    logger.error(f"Unexpected error: {exc}")
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "detail": str(exc),
-            "message": "An unexpected error occurred"
-        },
-    )
+# NOTE: the catch-all for bare Exception lives in catch_unhandled_exceptions
+# above, as a middleware rather than a handler. See the comment there.
 
 
 # Startup event
