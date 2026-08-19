@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class ClaudeProvider(BaseLLMProvider):
     """
     Anthropic Claude LLM provider implementation.
-    Supports Claude 3.5 Sonnet and other Claude models.
+    Defaults to Claude Sonnet 5; override with LLM_MODEL.
     """
 
     def __init__(self):
@@ -23,8 +23,8 @@ class ClaudeProvider(BaseLLMProvider):
 
         self.client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
-        # Use configured model or default to Claude 3.5 Sonnet
-        self.model = settings.LLM_MODEL or "claude-3-5-sonnet-20241022"
+        # Use configured model or default to Claude Sonnet 5
+        self.model = settings.LLM_MODEL or "claude-sonnet-5"
 
         logger.info(f"Initialized Claude provider with model: {self.model}")
 
@@ -55,18 +55,34 @@ class ClaudeProvider(BaseLLMProvider):
         try:
             logger.info(f"Requesting decision from Claude for machine {machine_data.get('machine_id')}")
 
+            # No temperature: sampling parameters were removed on Sonnet 5 and the
+            # rest of the 4.6+ family, and sending one is rejected with a 400.
+            #
+            # max_tokens covers thinking as well as the visible reply. Thinking is
+            # adaptive-on by default on these models, so the old 1024 ceiling could
+            # be spent reasoning and truncate the JSON payload mid-object.
             message = await self.client.messages.create(
                 model=self.model,
-                max_tokens=1024,
-                temperature=0.3,
+                max_tokens=8192,
                 system=system_prompt,
                 messages=[
                     {"role": "user", "content": user_prompt}
                 ]
             )
 
-            # Extract content from Claude's response
-            content = message.content[0].text
+            # Extract content from Claude's response. Take the first *text* block
+            # rather than content[0]: with thinking on, the first block is a
+            # thinking block, which carries no .text attribute at all.
+            content = next(
+                (block.text for block in message.content if block.type == "text"),
+                None
+            )
+
+            if content is None:
+                raise ValueError(
+                    f"Claude returned no text block (stop_reason={message.stop_reason})"
+                )
+
             logger.debug(f"Claude raw response: {content}")
 
             # Claude might return JSON in markdown code blocks, so we need to extract it
