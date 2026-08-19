@@ -139,3 +139,6 @@ tmp/
 
 # Plan files (optional - uncomment if you don't want to track plans)
 # .claude/plans/
+
+# Local-only Compose override (adds a dev SQL Server)
+AIHarvest_WOApp/docker-compose.override.yml
