@@ -20,7 +20,23 @@ class AIService:
     def __init__(self, db: Session):
         self.db = db
         self.settings = get_settings()
-        self.llm_provider = get_llm_provider()
+        self._llm_provider = None
+
+    @property
+    def llm_provider(self):
+        """
+        Resolve the LLM provider on first use rather than in __init__.
+
+        Building it eagerly meant an unconfigured API key raised while the
+        service was still being constructed -- before the routes could enter
+        their own try/except -- so the error escaped as an unhandled 500
+        instead of the 400 the route means to return. It also broke
+        execute_decision and get_recent_decisions, neither of which calls an
+        LLM at all.
+        """
+        if self._llm_provider is None:
+            self._llm_provider = get_llm_provider()
+        return self._llm_provider
 
     async def make_decision(self, machine_id: int) -> Dict[str, Any]:
         """
