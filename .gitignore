@@ -58,6 +58,7 @@ build
 .env.production.local
 
 # IDEs
+.vs/
 .vscode/
 .idea/
 *.swp
