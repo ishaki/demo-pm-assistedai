@@ -27,16 +27,16 @@ logger = logging.getLogger(__name__)
 
 # Test data constants
 SUPPLIERS = [
-    {"name": "TechServ Inc", "email": "ishak.ahmad@innoark.com"},
-    {"name": "MainCo Solutions", "email": "ishak.ahmad@innoark.com"},
-    {"name": "FixIt Pro", "email": "ishak.ahmad@innoark.com"},
-    {"name": "Industrial Care", "email": "ishak.ahmad@innoark.com"},
-    {"name": "MachineGuard", "email": "ishak.ahmad@innoark.com"},
-    {"name": "ProMaintain", "email": "ishak.ahmad@innoark.com"},
-    {"name": "QuickFix Ltd", "email": "ishak.ahmad@innoark.com"},
-    {"name": "ReliaTech", "email": "sishak.ahmad@innoark.com"},
-    {"name": "ServiceMax", "email": "ishak.ahmad@innoark.com"},
-    {"name": "EliteMaint", "email": "ishak.ahmad@innoark.com"}
+    {"name": "TechServ Inc", "email": "natalia4nib@gmail.com"},
+    {"name": "MainCo Solutions", "email": "natalia4nib@gmail.com"},
+    {"name": "FixIt Pro", "email": "natalia4nib@gmail.com"},
+    {"name": "Industrial Care", "email": "natalia4nib@gmail.com"},
+    {"name": "MachineGuard", "email": "natalia4nib@gmail.com"},
+    {"name": "ProMaintain", "email": "natalia4nib@gmail.com"},
+    {"name": "QuickFix Ltd", "email": "natalia4nib@gmail.com"},
+    {"name": "ReliaTech", "email": "natalia4nib@gmail.com"},
+    {"name": "ServiceMax", "email": "natalia4nib@gmail.com"},
+    {"name": "EliteMaint", "email": "natalia4nib@gmail.com"}
 ]
 
 FREQUENCIES = ["Monthly", "Bimonthly", "Yearly"]
