@@ -149,6 +149,17 @@ const WorkOrderView = () => {
     setApprovalDialogOpen(true);
   };
 
+  // The approve and complete endpoints report the supplier email outcome on the
+  // response rather than failing the request, since the status change is
+  // already committed. Without this the UI would claim success while the
+  // supplier was never actually notified.
+  const warnIfSupplierNotNotified = (updatedWO) => {
+    if (!updatedWO || updatedWO.notification_status === 'sent') return;
+    if (updatedWO.notification_detail) {
+      toast.warning(`Supplier not notified. ${updatedWO.notification_detail}`);
+    }
+  };
+
   const handleApprove = async () => {
     if (!approverName.trim()) {
       toast.warning('Please enter approver name to continue.');
@@ -157,12 +168,13 @@ const WorkOrderView = () => {
 
     try {
       setApproving(true);
-      await workOrderService.approveWorkOrder(selectedWO.id, approverName);
+      const updatedWO = await workOrderService.approveWorkOrder(selectedWO.id, approverName);
       setApprovalDialogOpen(false);
       setSelectedWO(null);
       setApproverName('');
       refetch();
       toast.success(`Work Order ${selectedWO.wo_number} has been approved successfully.`);
+      warnIfSupplierNotNotified(updatedWO);
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Unable to approve work order. Please try again.');
     } finally {
@@ -234,10 +246,11 @@ const WorkOrderView = () => {
 
     try {
       setCompletingWorkOrder(true);
-      await workOrderService.completeWorkOrder(selectedWOForComplete.id, completedDate);
+      const updatedWO = await workOrderService.completeWorkOrder(selectedWOForComplete.id, completedDate);
       handleCloseCompleteDialog();
       refetch();
       toast.success(`Work Order ${selectedWOForComplete.wo_number} marked as completed!`);
+      warnIfSupplierNotNotified(updatedWO);
     } catch (err) {
       toast.error('Failed to complete work order: ' + (err.response?.data?.detail || err.message));
     } finally {

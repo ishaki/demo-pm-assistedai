@@ -16,6 +16,77 @@ from ..schemas.work_order import (
 router = APIRouter()
 
 
+async def _notify_supplier(
+    db: Session,
+    service: WorkOrderService,
+    work_order,
+    notification_type: str
+) -> WorkOrderResponse:
+    """
+    Send the supplier email for a status change and fold the outcome into the
+    response.
+
+    A failed email must not fail the request: the status change is already
+    committed by the time we get here. But it must not be invisible either, so
+    the outcome rides back on the response for the UI to surface.
+
+    Args:
+        db: Database session
+        service: Work order service bound to the same session
+        work_order: The work order that just changed status
+        notification_type: "approval" or "completion"
+
+    Returns:
+        Work order response carrying notification_status/notification_detail
+    """
+    from ..services.notification_service import NotificationService
+    from ..services.machine_service import MachineService
+
+    machine = MachineService(db).get_machine_by_id(work_order.machine_id)
+
+    if not machine:
+        notification_status = "failed"
+        detail = (
+            f"Machine {work_order.machine_id} was not found, "
+            "so no supplier email could be sent."
+        )
+    elif not machine.supplier_email:
+        notification_status = "skipped"
+        detail = (
+            f"No supplier email address is set for machine {machine.machine_id}, "
+            "so no email was sent."
+        )
+    else:
+        notification_service = NotificationService()
+
+        if notification_type == "approval":
+            email_sent = await notification_service.send_approval_notification(
+                machine, work_order
+            )
+        else:
+            email_sent = await notification_service.send_completion_notification(
+                machine, work_order
+            )
+
+        if email_sent:
+            service.mark_notification_sent(work_order.id)
+            # Refresh work_order to pick up the notification tracking fields
+            db.refresh(work_order)
+            notification_status = "sent"
+            detail = f"Email sent to {machine.supplier_email}."
+        else:
+            notification_status = "failed"
+            detail = (
+                f"The email to {machine.supplier_email} could not be sent. "
+                "Check the SMTP settings and the backend log."
+            )
+
+    response = WorkOrderResponse.model_validate(work_order)
+    response.notification_status = notification_status
+    response.notification_detail = detail
+    return response
+
+
 @router.get("/", response_model=List[WorkOrderResponse])
 def get_work_orders(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
@@ -144,10 +215,14 @@ async def approve_work_order(
     db: Session = Depends(get_db)
 ):
     """
-    Approve a work order.
+    Approve a work order and email the supplier.
 
     - **wo_id**: Database ID of the work order
     - **approval_data**: Approval information (approved_by)
+
+    The approval is committed even if the email cannot be sent. Check
+    **notification_status** on the response ("sent", "failed" or "skipped") to
+    see whether the supplier was actually notified.
     """
     service = WorkOrderService(db)
 
@@ -168,23 +243,7 @@ async def approve_work_order(
     work_order = service.approve_work_order(wo_id, approval_data.approved_by)
 
     # Send approval notification to supplier
-    from ..services.notification_service import NotificationService
-    from ..services.machine_service import MachineService
-
-    notification_service = NotificationService()
-    machine_service = MachineService(db)
-    machine = machine_service.get_machine_by_id(work_order.machine_id)
-
-    if machine:
-        email_sent = await notification_service.send_approval_notification(machine, work_order)
-
-        # Update notification tracking if email sent successfully
-        if email_sent:
-            service.mark_notification_sent(wo_id)
-            # Refresh work_order to get updated fields
-            db.refresh(work_order)
-
-    return work_order
+    return await _notify_supplier(db, service, work_order, "approval")
 
 
 @router.post("/{wo_id}/complete", response_model=WorkOrderResponse)
@@ -194,10 +253,14 @@ async def complete_work_order(
     db: Session = Depends(get_db)
 ):
     """
-    Mark work order as completed.
+    Mark work order as completed and email the supplier.
 
     - **wo_id**: Database ID of the work order
     - **completion_data**: Completion details including completed_date
+
+    The completion is committed even if the email cannot be sent. Check
+    **notification_status** on the response ("sent", "failed" or "skipped") to
+    see whether the supplier was actually notified.
     """
     service = WorkOrderService(db)
 
@@ -235,23 +298,7 @@ async def complete_work_order(
     work_order = service.complete_work_order(wo_id, completion_data.completed_date)
 
     # Send completion notification to supplier
-    from ..services.notification_service import NotificationService
-    from ..services.machine_service import MachineService
-
-    notification_service = NotificationService()
-    machine_service = MachineService(db)
-    machine = machine_service.get_machine_by_id(work_order.machine_id)
-
-    if machine:
-        email_sent = await notification_service.send_completion_notification(machine, work_order)
-
-        # Update notification tracking if email sent successfully
-        if email_sent:
-            service.mark_notification_sent(wo_id)
-            # Refresh work_order to get updated fields
-            db.refresh(work_order)
-
-    return work_order
+    return await _notify_supplier(db, service, work_order, "completion")
 
 
 @router.post("/{wo_id}/cancel", response_model=WorkOrderResponse)

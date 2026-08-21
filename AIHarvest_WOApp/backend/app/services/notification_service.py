@@ -93,7 +93,12 @@ class NotificationService:
             return False
 
         try:
-            subject = f"Work Order Approved - {work_order.wo_number}"
+            # The subject has to satisfy two downstream consumers: the n8n
+            # check_maintenance_email workflow only forwards replies whose
+            # subject contains "Maintenance", and the date-extraction webhook
+            # locates this WO by matching WO-YYYY-NNN in it. A "Re:" prefix on
+            # the supplier's reply leaves both intact.
+            subject = f"Maintenance Work Order Approved - {work_order.wo_number}"
             body = self._build_approval_email(machine, work_order)
 
             success = await self._send_email(
@@ -290,7 +295,24 @@ class NotificationService:
         machine: Machine,
         work_order: WorkOrder
     ) -> str:
-        """Build HTML email body for approval notification"""
+        """
+        Build HTML email body for approval notification.
+
+        This is the message the supplier replies to with the date they will do
+        the work: the n8n check_maintenance_email workflow picks the reply up
+        over IMAP and posts it to /workflow/email-date-extraction, which writes
+        the extracted date onto this WO. Two constraints follow from that round
+        trip, and both are easy to break by editing this template casually:
+
+        - The body must ask for one explicit calendar date. The extractor is
+          instructed to return null for relative dates like "next Monday".
+        - The reply must keep the subject line, because the webhook locates the
+          WO by matching WO-YYYY-NNN in it.
+        """
+        supplier = machine.assigned_supplier or "Supplier"
+        priority = work_order.priority or "Not set"
+        location = machine.location or "-"
+        scheduled_date = work_order.scheduled_date or "Awaiting your confirmation"
 
         html = f"""
         <html>
@@ -300,30 +322,87 @@ class NotificationService:
                 .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
                 .header {{ background-color: #4caf50; color: white; padding: 20px; text-align: center; }}
                 .content {{ padding: 20px; background-color: #f9f9f9; }}
-                .info-box {{ background-color: white; padding: 15px; margin: 15px 0; border-left: 4px solid #4caf50; }}
+                .info-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+                .info-table th {{ background-color: #e0e0e0; padding: 10px; text-align: left; }}
+                .info-table td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
+                .action-box {{ background-color: #fff3cd; padding: 15px; margin: 15px 0; border-left: 4px solid #ffc107; }}
                 .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; }}
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>✓ Work Order Approved</h1>
+                    <h1>&#10003; Work Order Approved</h1>
                 </div>
 
                 <div class="content">
-                    <p>Dear Admin/Support,</p>
+                    <p>Dear {supplier},</p>
 
-                    <p>The work order for preventive maintenance has been approved and is ready for execution.</p>
+                    <p>The preventive maintenance work order below has been approved.
+                    Please confirm the date on which you can carry out the work.</p>
 
-                    <div class="info-box">
-                        <p><strong>Work Order:</strong> {work_order.wo_number}</p>
-                        <p><strong>Machine:</strong> {machine.machine_id} - {machine.name}</p>
-                        <p><strong>Location:</strong> {machine.location}</p>
-                        <p><strong>Approved By:</strong> {work_order.approved_by}</p>
-                        <p><strong>Approved At:</strong> {work_order.approved_at}</p>
+                    <table class="info-table">
+                        <tr>
+                            <th>Work Order</th>
+                            <th>Details</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Work Order Number</strong></td>
+                            <td>{work_order.wo_number}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Machine</strong></td>
+                            <td>{machine.machine_id} - {machine.name}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Location</strong></td>
+                            <td>{location}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Priority</strong></td>
+                            <td>{priority}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PM Frequency</strong></td>
+                            <td>{machine.pm_frequency}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PM Due Date</strong></td>
+                            <td>{machine.next_pm_date}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Scheduled Date</strong></td>
+                            <td>{scheduled_date}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Approved By</strong></td>
+                            <td>{work_order.approved_by}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Approved At</strong></td>
+                            <td>{work_order.approved_at}</td>
+                        </tr>
+                    </table>
+
+                    {self._add_notes_section(work_order.notes)}
+
+                    <div class="action-box">
+                        <p><strong>Action required: confirm your maintenance date</strong></p>
+                        <p>Please <strong>reply to this email</strong> with the date you will
+                        perform the maintenance.</p>
+                        <ul>
+                            <li>Give one specific calendar date, for example
+                            <strong>{machine.next_pm_date}</strong>.</li>
+                            <li>Relative dates such as "next Monday" or "in two weeks"
+                            cannot be processed automatically.</li>
+                            <li>Please keep the subject line unchanged so your reply can be
+                            matched to {work_order.wo_number}.</li>
+                        </ul>
+                        <p>Your reply updates the schedule for this work order automatically.
+                        If the date has to change later, simply reply again with the new date.</p>
                     </div>
 
-                    <p>You may now proceed with the scheduled maintenance.</p>
+                    <p>If you have any questions, please contact the maintenance team.</p>
 
                     <p>Best regards,<br>
                     <strong>PM - AI-Assisted Demo</strong></p>
@@ -331,6 +410,7 @@ class NotificationService:
 
                 <div class="footer">
                     <p>{EMAIL_FOOTER_NOTE}</p>
+                    <p>&copy; {datetime.now().year} {APP_NAME}. All rights reserved.</p>
                 </div>
             </div>
         </body>

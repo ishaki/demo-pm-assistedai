@@ -45,6 +45,18 @@ class WorkOrderResponse(WorkOrderBase):
     approved_by: Optional[str]
     machine_name: Optional[str] = Field(None, description="Machine name from joined machine table")
 
+    # Outcome of the supplier email attempted by this request. Not persisted --
+    # only the approve and complete endpoints set it, so that a failed email
+    # does not fail the request but is still visible to the caller.
+    notification_status: Optional[Literal["sent", "failed", "skipped"]] = Field(
+        None,
+        description="Outcome of the supplier email triggered by this request"
+    )
+    notification_detail: Optional[str] = Field(
+        None,
+        description="Human-readable explanation of notification_status"
+    )
+
     class Config:
         from_attributes = True
 
