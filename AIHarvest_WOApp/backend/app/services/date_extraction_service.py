@@ -69,15 +69,40 @@ class DateExtractionService:
         return json.loads(content)
 
     async def _extract_with_claude(self, system_prompt: str, user_prompt: str) -> dict:
-        """Extract date using Claude provider"""
+        """
+        Extract date using Claude provider.
+
+        Kept deliberately in step with ClaudeProvider.get_decision, which learned
+        all three of these the hard way:
+
+        - No temperature. Sampling parameters were removed on Sonnet 5 and the
+          rest of the 4.6+ family, and sending one is rejected with a 400. That
+          400 was swallowed by the caller's except block and surfaced as
+          confidence 0.0, so every supplier reply was rejected as "confidence
+          too low" with nothing pointing at the real cause.
+        - max_tokens covers thinking as well as the visible reply, and thinking
+          is adaptive-on by default, so 1024 could be spent reasoning and
+          truncate the JSON mid-object.
+        - The first content block is a thinking block when thinking runs, and it
+          has no .text at all. Take the first *text* block instead.
+        """
         message = await self.llm_provider.client.messages.create(
             model=self.llm_provider.model,
-            max_tokens=1024,
-            temperature=0.3,
+            max_tokens=8192,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}]
         )
-        content = message.content[0].text
+
+        content = next(
+            (block.text for block in message.content if block.type == "text"),
+            None
+        )
+
+        if content is None:
+            raise ValueError(
+                f"Claude returned no text block (stop_reason={message.stop_reason})"
+            )
+
         # Extract JSON from markdown if needed
         content = self._extract_json_from_response(content)
         return json.loads(content)
