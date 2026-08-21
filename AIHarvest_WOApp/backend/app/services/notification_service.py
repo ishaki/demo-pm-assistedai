@@ -47,7 +47,11 @@ class NotificationService:
             return False
 
         try:
-            subject = f"PM Work Order - {machine.machine_id}"
+            # Same subject the n8n daily-pm-checker uses for its supplier email.
+            # Keep the two in step: this is the wording suppliers recognise, and
+            # the "Maintenance" in it is what the n8n email checker filters
+            # replies on.
+            subject = f"Maintenance Request For: {machine.machine_id}"
             body = self._build_work_order_email(machine, work_order, additional_context)
 
             success = await self._send_email(
@@ -79,7 +83,12 @@ class NotificationService:
         work_order: WorkOrder
     ) -> bool:
         """
-        Send notification when work order is approved.
+        Send the internal notice that a work order has been approved.
+
+        This goes to the machine's admin_email, not to the supplier. Approval is
+        an internal event: the supplier is contacted separately by the n8n
+        daily-pm-checker workflow, which owns the "Maintenance Request For:"
+        message and the date reply that comes back from it.
 
         Args:
             machine: Machine object
@@ -88,21 +97,22 @@ class NotificationService:
         Returns:
             True if email sent successfully, False otherwise
         """
-        if not machine.supplier_email:
-            logger.warning(f"No supplier email for machine {machine.machine_id}")
+        if not machine.admin_email:
+            logger.warning(f"No admin email for machine {machine.machine_id}")
             return False
 
         try:
-            # The subject has to satisfy two downstream consumers: the n8n
-            # check_maintenance_email workflow only forwards replies whose
-            # subject contains "Maintenance", and the date-extraction webhook
-            # locates this WO by matching WO-YYYY-NNN in it. A "Re:" prefix on
-            # the supplier's reply leaves both intact.
-            subject = f"Maintenance Work Order Approved - {work_order.wo_number}"
+            # Deliberately free of the word "Maintenance". The n8n email checker
+            # picks up any reply whose subject carries it and feeds the body to
+            # the date-extraction webhook -- and admin_email and supplier_email
+            # can be the same mailbox, as they are in the seed data. Keeping the
+            # word out means an admin notice can never be mistaken for the
+            # supplier's date confirmation.
+            subject = f"Work Order Approved - {work_order.wo_number}"
             body = self._build_approval_email(machine, work_order)
 
             success = await self._send_email(
-                to_email=machine.supplier_email,
+                to_email=machine.admin_email,
                 subject=subject,
                 body=body,
                 html=True
@@ -110,7 +120,7 @@ class NotificationService:
 
             if success:
                 logger.info(
-                    f"Approval notification sent to {machine.supplier_email} "
+                    f"Approval notification sent to {machine.admin_email} "
                     f"for WO {work_order.wo_number}"
                 )
 
@@ -296,23 +306,22 @@ class NotificationService:
         work_order: WorkOrder
     ) -> str:
         """
-        Build HTML email body for approval notification.
+        Build HTML email body for the approval notice sent to the admin.
 
-        This is the message the supplier replies to with the date they will do
-        the work: the n8n check_maintenance_email workflow picks the reply up
-        over IMAP and posts it to /workflow/email-date-extraction, which writes
-        the extracted date onto this WO. Two constraints follow from that round
-        trip, and both are easy to break by editing this template casually:
+        This is an internal record that the work order cleared approval, not a
+        request for anything. It deliberately does not ask for a date: the
+        supplier -- who is the only party who can supply one -- never receives
+        this message. That conversation belongs to the n8n daily-pm-checker
+        workflow and the reply it collects.
 
-        - The body must ask for one explicit calendar date. The extractor is
-          instructed to return null for relative dates like "next Monday".
-        - The reply must keep the subject line, because the webhook locates the
-          WO by matching WO-YYYY-NNN in it.
+        Nullable columns fall back to a readable placeholder rather than
+        rendering "None".
         """
-        supplier = machine.assigned_supplier or "Supplier"
+        supplier = machine.assigned_supplier or "Not assigned"
+        supplier_email = machine.supplier_email or "Not set"
         priority = work_order.priority or "Not set"
         location = machine.location or "-"
-        scheduled_date = work_order.scheduled_date or "Awaiting your confirmation"
+        scheduled_date = work_order.scheduled_date or "Not confirmed yet"
 
         html = f"""
         <html>
@@ -336,10 +345,10 @@ class NotificationService:
                 </div>
 
                 <div class="content">
-                    <p>Dear {supplier},</p>
+                    <p>Dear Admin/Support,</p>
 
-                    <p>The preventive maintenance work order below has been approved.
-                    Please confirm the date on which you can carry out the work.</p>
+                    <p>The preventive maintenance work order below has been approved
+                    and is ready for execution.</p>
 
                     <table class="info-table">
                         <tr>
@@ -361,6 +370,14 @@ class NotificationService:
                         <tr>
                             <td><strong>Priority</strong></td>
                             <td>{priority}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Assigned Supplier</strong></td>
+                            <td>{supplier}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Supplier Email</strong></td>
+                            <td>{supplier_email}</td>
                         </tr>
                         <tr>
                             <td><strong>PM Frequency</strong></td>
@@ -387,22 +404,14 @@ class NotificationService:
                     {self._add_notes_section(work_order.notes)}
 
                     <div class="action-box">
-                        <p><strong>Action required: confirm your maintenance date</strong></p>
-                        <p>Please <strong>reply to this email</strong> with the date you will
-                        perform the maintenance.</p>
-                        <ul>
-                            <li>Give one specific calendar date, for example
-                            <strong>{machine.next_pm_date}</strong>.</li>
-                            <li>Relative dates such as "next Monday" or "in two weeks"
-                            cannot be processed automatically.</li>
-                            <li>Please keep the subject line unchanged so your reply can be
-                            matched to {work_order.wo_number}.</li>
-                        </ul>
-                        <p>Your reply updates the schedule for this work order automatically.
-                        If the date has to change later, simply reply again with the new date.</p>
+                        <p><strong>What happens next</strong></p>
+                        <p>The supplier is contacted separately with the maintenance
+                        request. When they reply with the date they will carry out the
+                        work, that date is written to this work order automatically and
+                        the scheduled date above is filled in.</p>
+                        <p>No action is required from you unless the scheduled date is
+                        still empty when the PM due date approaches.</p>
                     </div>
-
-                    <p>If you have any questions, please contact the maintenance team.</p>
 
                     <p>Best regards,<br>
                     <strong>PM - AI-Assisted Demo</strong></p>

@@ -12,6 +12,10 @@ class MachineBase(BaseModel):
     next_pm_date: date = Field(..., description="Next scheduled PM date")
     assigned_supplier: Optional[str] = Field(None, max_length=200, description="Assigned supplier name")
     supplier_email: Optional[str] = Field(None, max_length=200, description="Supplier email address")
+    admin_email: Optional[str] = Field(
+        None, max_length=200,
+        description="Internal admin address notified when a work order is approved"
+    )
 
 
 class MachineCreate(MachineBase):
@@ -30,6 +34,7 @@ class MachineUpdate(BaseModel):
     next_pm_date: Optional[date] = None
     assigned_supplier: Optional[str] = Field(None, max_length=200)
     supplier_email: Optional[str] = Field(None, max_length=200)
+    admin_email: Optional[str] = Field(None, max_length=200)
     status: Optional[Literal["Active", "Inactive"]] = None
 
 

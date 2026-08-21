@@ -17,6 +17,9 @@ class Machine(Base):
     next_pm_date = Column(Date, nullable=False, index=True)
     assigned_supplier = Column(String(200), nullable=True)
     supplier_email = Column(String(200), nullable=True)
+    # Internal recipient for work order approval notices. The supplier is
+    # contacted separately by the n8n daily-pm-checker workflow.
+    admin_email = Column(String(200), nullable=True)
     status = Column(String(20), nullable=False, default="Active")  # 'Active', 'Inactive'
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())

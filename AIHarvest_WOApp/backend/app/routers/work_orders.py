@@ -16,15 +16,27 @@ from ..schemas.work_order import (
 router = APIRouter()
 
 
-async def _notify_supplier(
+# Who each status change notifies, and which machine column holds the address.
+#
+# Approval is an internal event: it tells the admin the work order cleared
+# review. The supplier is not involved -- they are contacted by the n8n
+# daily-pm-checker workflow, which owns the "Maintenance Request For:" message
+# and the date reply that comes back from it. Completion is the opposite: it
+# thanks the supplier for work they actually did.
+_NOTIFY_RECIPIENTS = {
+    "approval": ("admin_email", "admin"),
+    "completion": ("supplier_email", "supplier"),
+}
+
+
+async def _notify(
     db: Session,
     service: WorkOrderService,
     work_order,
     notification_type: str
 ) -> WorkOrderResponse:
     """
-    Send the supplier email for a status change and fold the outcome into the
-    response.
+    Send the email for a status change and fold the outcome into the response.
 
     A failed email must not fail the request: the status change is already
     committed by the time we get here. But it must not be invisible either, so
@@ -42,19 +54,22 @@ async def _notify_supplier(
     from ..services.notification_service import NotificationService
     from ..services.machine_service import MachineService
 
+    address_field, recipient_label = _NOTIFY_RECIPIENTS[notification_type]
+
     machine = MachineService(db).get_machine_by_id(work_order.machine_id)
+    recipient = getattr(machine, address_field, None) if machine else None
 
     if not machine:
         notification_status = "failed"
         detail = (
             f"Machine {work_order.machine_id} was not found, "
-            "so no supplier email could be sent."
+            f"so no {recipient_label} email could be sent."
         )
-    elif not machine.supplier_email:
+    elif not recipient:
         notification_status = "skipped"
         detail = (
-            f"No supplier email address is set for machine {machine.machine_id}, "
-            "so no email was sent."
+            f"No {recipient_label} email address is set for machine "
+            f"{machine.machine_id}, so no email was sent."
         )
     else:
         notification_service = NotificationService()
@@ -73,11 +88,11 @@ async def _notify_supplier(
             # Refresh work_order to pick up the notification tracking fields
             db.refresh(work_order)
             notification_status = "sent"
-            detail = f"Email sent to {machine.supplier_email}."
+            detail = f"Email sent to {recipient}."
         else:
             notification_status = "failed"
             detail = (
-                f"The email to {machine.supplier_email} could not be sent. "
+                f"The email to {recipient} could not be sent. "
                 "Check the SMTP settings and the backend log."
             )
 
@@ -215,14 +230,17 @@ async def approve_work_order(
     db: Session = Depends(get_db)
 ):
     """
-    Approve a work order and email the supplier.
+    Approve a work order and email the machine's admin.
 
     - **wo_id**: Database ID of the work order
     - **approval_data**: Approval information (approved_by)
 
+    The notice goes to the machine's **admin_email**, not to the supplier: the
+    supplier is contacted separately by the n8n daily-pm-checker workflow.
+
     The approval is committed even if the email cannot be sent. Check
     **notification_status** on the response ("sent", "failed" or "skipped") to
-    see whether the supplier was actually notified.
+    see whether the admin was actually notified.
     """
     service = WorkOrderService(db)
 
@@ -242,8 +260,8 @@ async def approve_work_order(
 
     work_order = service.approve_work_order(wo_id, approval_data.approved_by)
 
-    # Send approval notification to supplier
-    return await _notify_supplier(db, service, work_order, "approval")
+    # Send the approval notice to the admin
+    return await _notify(db, service, work_order, "approval")
 
 
 @router.post("/{wo_id}/complete", response_model=WorkOrderResponse)
@@ -257,6 +275,8 @@ async def complete_work_order(
 
     - **wo_id**: Database ID of the work order
     - **completion_data**: Completion details including completed_date
+
+    The notice goes to the machine's **supplier_email**.
 
     The completion is committed even if the email cannot be sent. Check
     **notification_status** on the response ("sent", "failed" or "skipped") to
@@ -298,7 +318,7 @@ async def complete_work_order(
     work_order = service.complete_work_order(wo_id, completion_data.completed_date)
 
     # Send completion notification to supplier
-    return await _notify_supplier(db, service, work_order, "completion")
+    return await _notify(db, service, work_order, "completion")
 
 
 @router.post("/{wo_id}/cancel", response_model=WorkOrderResponse)

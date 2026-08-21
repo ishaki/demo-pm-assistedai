@@ -149,14 +149,18 @@ const WorkOrderView = () => {
     setApprovalDialogOpen(true);
   };
 
-  // The approve and complete endpoints report the supplier email outcome on the
-  // response rather than failing the request, since the status change is
-  // already committed. Without this the UI would claim success while the
-  // supplier was never actually notified.
-  const warnIfSupplierNotNotified = (updatedWO) => {
+  // The approve and complete endpoints report the email outcome on the response
+  // rather than failing the request, since the status change is already
+  // committed. Without this the UI would claim success while nobody was
+  // actually notified.
+  //
+  // The two endpoints write to different people -- approval goes to the
+  // machine's admin, completion to the supplier -- so the recipient is named by
+  // the caller rather than assumed here.
+  const warnIfNotNotified = (updatedWO, recipient) => {
     if (!updatedWO || updatedWO.notification_status === 'sent') return;
     if (updatedWO.notification_detail) {
-      toast.warning(`Supplier not notified. ${updatedWO.notification_detail}`);
+      toast.warning(`${recipient} not notified. ${updatedWO.notification_detail}`);
     }
   };
 
@@ -174,7 +178,7 @@ const WorkOrderView = () => {
       setApproverName('');
       refetch();
       toast.success(`Work Order ${selectedWO.wo_number} has been approved successfully.`);
-      warnIfSupplierNotNotified(updatedWO);
+      warnIfNotNotified(updatedWO, 'Admin');
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Unable to approve work order. Please try again.');
     } finally {
@@ -250,7 +254,7 @@ const WorkOrderView = () => {
       handleCloseCompleteDialog();
       refetch();
       toast.success(`Work Order ${selectedWOForComplete.wo_number} marked as completed!`);
-      warnIfSupplierNotNotified(updatedWO);
+      warnIfNotNotified(updatedWO, 'Supplier');
     } catch (err) {
       toast.error('Failed to complete work order: ' + (err.response?.data?.detail || err.message));
     } finally {

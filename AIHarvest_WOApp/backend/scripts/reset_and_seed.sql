@@ -80,6 +80,10 @@ DECLARE @ClearWorkflowLogs BIT = 0;
 
 DECLARE @MachineCount INT = 75;
 
+/* Recipient of the work order approval notice, written to every seeded
+   machine's admin_email. Mirrors ADMIN_EMAIL in seed_data.py. */
+DECLARE @AdminEmail VARCHAR(200) = 'ishak.ahmad@innoark.com';
+
 /* Machine PM distribution. These are the numbers seed_data.py actually
    produces: int(75*0.20) = 15 and int(75*0.33) = 24, leaving 36. (README.md's
    table says 25/35 -- the code rounds down, and the code is what runs.) */
@@ -282,7 +286,7 @@ BEGIN TRY
 
     INSERT machines (machine_id, name, description, location, pm_frequency,
                      last_pm_date, next_pm_date, assigned_supplier,
-                     supplier_email, status, created_at, updated_at)
+                     supplier_email, admin_email, status, created_at, updated_at)
     SELECT
         'MACH-' + RIGHT('000' + CAST(n.i AS VARCHAR(10)), 3),
         t.name + ' ' + CAST(n.i AS VARCHAR(10)),
@@ -293,6 +297,7 @@ BEGIN TRY
         d.next_pm,
         s.name,
         s.email,
+        @AdminEmail,
         'Active',
         @Now,
         @Now

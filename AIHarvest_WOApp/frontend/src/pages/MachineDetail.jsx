@@ -223,12 +223,15 @@ const MachineDetail = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Supplier Information */}
+        {/* Contacts. Two different people, and the app writes to them at
+            different moments: the supplier is asked to do the work, the admin
+            is told when a work order is approved. Showing both here is the
+            only place either address is visible in the UI. */}
         <Card>
           <CardContent className="flex flex-col h-full">
             <div className="flex items-center border-b border-line pb-4 mb-6">
               <span className="material-icons-round text-content-muted mr-2">business</span>
-              <h2 className="text-lg font-semibold text-content">Supplier Information</h2>
+              <h2 className="text-lg font-semibold text-content">Contacts</h2>
             </div>
             <div className="grid grid-cols-1 gap-y-6">
               <div>
@@ -242,12 +245,33 @@ const MachineDetail = () => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Supplier Email</label>
-                <a
-                  href={`mailto:${machine.supplier_email}`}
-                  className="text-base font-medium text-primary-on-soft hover:underline"
-                >
-                  {machine.supplier_email || 'N/A'}
-                </a>
+                {machine.supplier_email ? (
+                  <a
+                    href={`mailto:${machine.supplier_email}`}
+                    className="text-base font-medium text-primary-on-soft hover:underline"
+                  >
+                    {machine.supplier_email}
+                  </a>
+                ) : (
+                  <p className="text-base font-medium text-content-muted">N/A</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1">Admin Email</label>
+                {machine.admin_email ? (
+                  <a
+                    href={`mailto:${machine.admin_email}`}
+                    className="text-base font-medium text-primary-on-soft hover:underline"
+                  >
+                    {machine.admin_email}
+                  </a>
+                ) : (
+                  /* Not an error, but worth flagging: approving a work order
+                     for this machine will notify nobody. */
+                  <p className="text-base font-medium text-warning-on-soft">
+                    Not set &mdash; approvals will not be emailed
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>

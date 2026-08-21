@@ -39,6 +39,11 @@ SUPPLIERS = [
     {"name": "EliteMaint", "email": "natalia4nib@gmail.com"}
 ]
 
+# Recipient of the work order approval notice. One address for the whole
+# demo estate, the same way SUPPLIERS all point at one mailbox -- change it
+# here and every seeded machine follows.
+ADMIN_EMAIL = "ishak.ahmad@gmail.com"
+
 FREQUENCIES = ["Monthly", "Bimonthly", "Yearly"]
 LOCATIONS = ["Zone A", "Zone B", "Zone C", "Zone D", "Zone E"]
 MACHINE_TYPES = [
@@ -92,6 +97,7 @@ def generate_machines(db: SessionLocal, count: int = 75):
             next_pm_date=next_pm,
             assigned_supplier=supplier["name"],
             supplier_email=supplier["email"],
+            admin_email=ADMIN_EMAIL,
             status="Active"
         )
         machines_created.append(machine)
@@ -116,6 +122,7 @@ def generate_machines(db: SessionLocal, count: int = 75):
             next_pm_date=next_pm,
             assigned_supplier=supplier["name"],
             supplier_email=supplier["email"],
+            admin_email=ADMIN_EMAIL,
             status="Active"
         )
         machines_created.append(machine)
@@ -140,6 +147,7 @@ def generate_machines(db: SessionLocal, count: int = 75):
             next_pm_date=next_pm,
             assigned_supplier=supplier["name"],
             supplier_email=supplier["email"],
+            admin_email=ADMIN_EMAIL,
             status="Active"
         )
         machines_created.append(machine)
