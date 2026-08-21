@@ -218,8 +218,9 @@ Backend validation (`routers/workflow_webhooks.py:84`) — all must pass:
 2. The WO exists
 3. WO status is exactly `Approved` (`workflow_webhooks.py:147`)
 4. LLM confidence ≥ 0.7 (`workflow_webhooks.py:165`)
-5. A date was returned (relative dates like "next Monday" return `null` by
-   design)
+5. A date was returned. Relative wording ("tomorrow", "next Friday", "end of
+   the month") is resolved against today; only genuinely vague wording
+   ("sometime soon") returns `null`
 6. The date is not in the past (`workflow_webhooks.py:75`)
 
 The **exported** workflow JSON is missing the callback node
