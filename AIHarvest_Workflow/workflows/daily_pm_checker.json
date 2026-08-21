@@ -33,7 +33,7 @@
             },
             {
               "name": "limit",
-              "value": "2"
+              "value": "10"
             }
           ]
         },
@@ -174,10 +174,10 @@
             {
               "id": "5f474f7f-9ee8-465a-b386-a69a76a2b1c7",
               "leftValue": "={{ $json.confidence }}",
-              "rightValue": 0.9,
+              "rightValue": 0.7,
               "operator": {
                 "type": "number",
-                "operation": "gt"
+                "operation": "gte"
               }
             }
           ],
