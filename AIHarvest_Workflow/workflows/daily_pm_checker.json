@@ -29,7 +29,7 @@
           "parameters": [
             {
               "name": "pm_status",
-              "value": "due_soon,overdue"
+              "value": "due_soon,overdue,wo_created"
             },
             {
               "name": "limit",

@@ -29,7 +29,8 @@ class MachineService:
         Args:
             skip: Number of records to skip
             limit: Maximum number of records to return
-            pm_status: Filter by PM status (scheduled, overdue, due_soon, ok)
+            pm_status: Filter by PM status, single value or comma-separated
+                list (scheduled, wo_created, overdue, due_soon, ok)
             location: Filter by location
             exclude_scheduled: Exclude machines with approved work orders that have scheduled dates
 
@@ -65,13 +66,15 @@ class MachineService:
 
             # Filter by PM status and collect with days_until_pm for sorting
             filtered_machines = []
+            # Accept either a single status or a comma-separated list, so a
+            # caller can ask for e.g. "due_soon,overdue,wo_created" without the
+            # combination needing to be special-cased here.
+            requested = [s.strip() for s in pm_status.split(",") if s.strip()]
+
             for machine in all_machines:
                 machine_pm_status = self.calculate_pm_status(machine.next_pm_date, machine)
                 days_until = self.calculate_days_until_pm(machine.next_pm_date)
-                if pm_status == "due_soon,overdue":
-                    if machine_pm_status in ["due_soon", "overdue"]:
-                        filtered_machines.append((machine, days_until))
-                elif machine_pm_status == pm_status:
+                if machine_pm_status in requested:
                     filtered_machines.append((machine, days_until))
 
             # Sort by days_until_pm ascending (overdue machines with negative values appear first)
@@ -193,26 +196,37 @@ class MachineService:
         """
         Calculate PM status based on next PM date and work order status.
 
+        An open work order outranks the date-based status. Once maintenance is
+        in motion, next_pm_date no longer says anything useful about the
+        machine -- leaving it on "overdue" hides the fact that the work order
+        already exists, which is exactly the machine an operator would chase.
+
         Args:
             next_pm_date: Next scheduled PM date
-            machine: Machine object to check for scheduled work orders (optional)
+            machine: Machine object to check for open work orders (optional)
 
         Returns:
-            Status string: 'scheduled', 'overdue', 'due_soon', or 'ok'
+            Status string: 'scheduled', 'wo_created', 'overdue', 'due_soon', or 'ok'
         """
-        # Check if machine has approved work order with scheduled date (highest priority)
         if machine:
             from ..models.work_order import WorkOrder
-            has_scheduled_wo = self.db.query(WorkOrder).filter(
+            open_wos = self.db.query(WorkOrder).filter(
                 and_(
                     WorkOrder.machine_id == machine.id,
-                    WorkOrder.status == "Approved",
-                    WorkOrder.scheduled_date.isnot(None)
+                    WorkOrder.status.in_(["Draft", "Pending_Approval", "Approved"])
                 )
-            ).first()
+            ).all()
 
-            if has_scheduled_wo:
+            # An approved work order with a date the supplier confirmed is the
+            # strongest signal there is.
+            if any(wo.status == "Approved" and wo.scheduled_date is not None for wo in open_wos):
                 return "scheduled"
+
+            # A work order exists but no date is fixed yet -- it is either
+            # waiting for approval, or approved and waiting on the supplier's
+            # reply to /workflow-webhooks/email-date-extraction.
+            if open_wos:
+                return "wo_created"
 
         # Fall through to date-based status calculation
         today = datetime.now().date()

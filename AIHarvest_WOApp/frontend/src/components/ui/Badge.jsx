@@ -18,6 +18,7 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
     warning: 'bg-warning text-warning-contrast',
     success: 'bg-success text-success-contrast',
     info: 'bg-info text-info-contrast',
+    pending: 'bg-pending text-pending-contrast',
     gray: 'bg-line-strong text-content',
   };
 

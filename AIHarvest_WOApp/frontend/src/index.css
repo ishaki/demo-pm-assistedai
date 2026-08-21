@@ -70,6 +70,16 @@
   --info-on-soft: 29 78 216;
   --info-line: 191 219 254;
 
+  /* Violet, deliberately off the blue axis: "WO Created" sits next to
+     "Scheduled" in the same table column, and two blues are indistinguishable
+     at badge size. violet-700 carries white text at 7.0:1. */
+  --pending: 109 40 217;
+  --pending-hover: 91 33 182;
+  --pending-contrast: 255 255 255;
+  --pending-soft: 245 243 255;
+  --pending-on-soft: 109 40 217;
+  --pending-line: 221 214 254;
+
   --shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.06);
   --shadow-card-hover: 0 4px 6px -1px rgb(15 23 42 / 0.10), 0 2px 4px -2px rgb(15 23 42 / 0.06);
   --shadow-soft: 0 4px 6px -1px rgb(15 23 42 / 0.05), 0 2px 4px -1px rgb(15 23 42 / 0.03);
@@ -127,6 +137,13 @@
   --info-soft: 16 34 61;
   --info-on-soft: 147 197 253;
   --info-line: 30 64 175;
+
+  --pending: 167 139 250;
+  --pending-hover: 196 181 253;
+  --pending-contrast: 29 16 54;
+  --pending-soft: 33 24 61;
+  --pending-on-soft: 196 181 253;
+  --pending-line: 91 33 182;
 
   /* Light-mode shadows vanish against a dark canvas — these go deeper and
      more opaque to keep cards legibly separated from the background. */

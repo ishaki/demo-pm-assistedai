@@ -56,7 +56,7 @@ const MachineDashboard = () => {
       acc.total++;
       return acc;
     },
-    { scheduled: 0, overdue: 0, due_soon: 0, ok: 0, total: 0 }
+    { scheduled: 0, wo_created: 0, overdue: 0, due_soon: 0, ok: 0, total: 0 }
   );
 
   // Sorting handler
@@ -139,7 +139,7 @@ const MachineDashboard = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
         <Card className="bg-error-soft border-error-line">
           <CardContent className="text-center">
             <div className="text-[2.5rem] leading-none font-bold text-error-on-soft">{summary.overdue}</div>
@@ -151,6 +151,13 @@ const MachineDashboard = () => {
           <CardContent className="text-center">
             <div className="text-[2.5rem] leading-none font-bold text-warning-on-soft">{summary.due_soon}</div>
             <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-content-muted">Due Soon (≤30 days)</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-pending-soft border-pending-line">
+          <CardContent className="text-center">
+            <div className="text-[2.5rem] leading-none font-bold text-pending-on-soft">{summary.wo_created}</div>
+            <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-content-muted">WO Created</div>
           </CardContent>
         </Card>
 
@@ -186,6 +193,7 @@ const MachineDashboard = () => {
             { value: 'all', label: 'All Machines' },
             { value: 'overdue', label: 'Overdue' },
             { value: 'due_soon', label: 'Due Soon' },
+            { value: 'wo_created', label: 'WO Created' },
             { value: 'scheduled', label: 'Scheduled' },
             { value: 'ok', label: 'OK' },
           ]}

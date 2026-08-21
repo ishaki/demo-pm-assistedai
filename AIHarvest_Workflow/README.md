@@ -11,7 +11,9 @@ This workflow runs daily at 01:00 AM to check for machines requiring preventive 
 #### Workflow Steps:
 
 1. **Schedule Trigger** - Runs daily at 01:00 (Cron: `0 1 * * *`)
-2. **Get Machines Due for PM** - Fetches machines with PM status "due_soon" or "overdue"
+2. **Get Machines Due for PM** - Fetches machines with PM status "due_soon", "overdue"
+   or "wo_created" (the last so machines that already have an open work order are still
+   seen by the WAIT and SEND_NOTIFICATION branches)
 3. **Split In Batches** - Processes machines in batches of 5
 4. **Get AI Decision** - Calls AI API to get decision for each machine
 5. **Decision Router** - Routes based on AI decision:

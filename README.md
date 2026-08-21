@@ -297,7 +297,7 @@ If you want n8n to send emails:
 
 1. Navigate to http://localhost:3000
 2. View summary cards showing machine counts by status
-3. Filter machines by status (All, Overdue, Due Soon, OK)
+3. Filter machines by status (All, Overdue, Due Soon, WO Created, Scheduled, OK)
 4. Click on a machine card to view details
 
 ### Triggering AI Decision

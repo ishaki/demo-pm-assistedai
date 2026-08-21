@@ -55,6 +55,7 @@ module.exports = {
         error: family('error'),
         warning: family('warning'),
         info: family('info'),
+        pending: family('pending'),
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],

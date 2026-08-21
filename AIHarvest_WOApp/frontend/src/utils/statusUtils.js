@@ -5,6 +5,8 @@ export const getPMStatusLabel = (pmStatus) => {
   switch (pmStatus) {
     case 'scheduled':
       return 'Scheduled';
+    case 'wo_created':
+      return 'WO Created';
     case 'overdue':
       return 'Overdue';
     case 'due_soon':
@@ -65,6 +67,8 @@ export const getPMStatusVariant = (pmStatus) => {
   switch (pmStatus) {
     case 'scheduled':
       return 'info';
+    case 'wo_created':
+      return 'pending';
     case 'overdue':
       return 'error';
     case 'due_soon':

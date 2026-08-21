@@ -40,7 +40,14 @@ class MachineResponse(MachineBase):
     status: str
     created_at: datetime
     updated_at: datetime
-    pm_status: str = Field(..., description="PM status: scheduled, overdue, due_soon, or ok")
+    pm_status: str = Field(
+        ...,
+        description=(
+            "PM status: scheduled (approved work order with a confirmed date), "
+            "wo_created (work order open but no date confirmed yet), overdue, "
+            "due_soon, or ok"
+        )
+    )
     days_until_pm: int = Field(..., description="Days until PM (negative if overdue)")
 
     class Config:
