@@ -42,7 +42,7 @@ SUPPLIERS = [
 # Recipient of the work order approval notice. One address for the whole
 # demo estate, the same way SUPPLIERS all point at one mailbox -- change it
 # here and every seeded machine follows.
-ADMIN_EMAIL = "ishak.ahmad@gmail.com"
+ADMIN_EMAIL = "ishak.ahmad@innoark.com"
 
 FREQUENCIES = ["Monthly", "Bimonthly", "Yearly"]
 LOCATIONS = ["Zone A", "Zone B", "Zone C", "Zone D", "Zone E"]
