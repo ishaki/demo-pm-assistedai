@@ -1,3 +1,3 @@
-from . import machines, work_orders, ai
+from . import machines, work_orders, ai, admin
 
-__all__ = ["machines", "work_orders", "ai"]
+__all__ = ["machines", "work_orders", "ai", "admin"]

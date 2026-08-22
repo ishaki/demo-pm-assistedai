@@ -239,7 +239,24 @@ Three things that catch people out:
 - **`DEBUG=False`.** With `DEBUG=True` SQLAlchemy logs every statement, which
   floods the logs and leaks query contents.
 
-Lock the file down — it holds your database password and API key:
+### Demo reset page
+
+The page at `/demo-reset`, reached from the sidebar copyright, deletes every row
+in `machines`, `maintenance_history`, `work_orders`, `ai_decisions` and
+`workflow_logs`, then reseeds. There is no other authentication in this
+application, so these two variables are the whole of its access control.
+
+| Variable | Value | Why |
+|---|---|---|
+| `DEMO_RESET_ENABLED` | `True` on a demo box, **`False` on anything holding real data** | `False` makes the endpoint answer 403 and do nothing. |
+| `DEMO_RESET_TOKEN` | 32+ random characters | The passphrase the page asks for. Left blank while enabled, the endpoint answers **503** for every request rather than standing open. Generate one with `python -c "import secrets; print(secrets.token_urlsafe(32))"`. |
+| `DEMO_ADMIN_EMAIL` | e.g. `you@example.com` | Prefilled on the page; a reset writes it to every machine's `admin_email`. |
+| `DEMO_SUPPLIER_EMAIL` | e.g. `supplier@example.com` | Prefilled on the page; a reset writes it to every machine's `supplier_email`. |
+
+Changing any of these needs the container **recreated**, not restarted — the
+same caveat as the API keys below.
+
+Lock the file down — it holds your database password, API key and reset token:
 
 ```bash
 chmod 600 .env
@@ -370,8 +387,9 @@ needs a manual `ALTER TABLE`.
 destructive: each clears its tables first.
 
 ```bash
-# 75 machines, 10 suppliers, 5 zones, maintenance history
-docker compose -f docker-compose.prod.yml exec backend python scripts/seed_data.py
+# 75 machines, 10 suppliers, 5 zones, maintenance history.
+# --yes skips the confirmation prompt, which a runbook should not block on.
+docker compose -f docker-compose.prod.yml exec backend python scripts/seed_data.py --yes
 
 # 45 work orders across every status, plus the AI decisions behind them
 docker compose -f docker-compose.prod.yml exec backend python scripts/seed_work_orders.py
@@ -379,6 +397,16 @@ docker compose -f docker-compose.prod.yml exec backend python scripts/seed_work_
 
 Run `seed_data.py` first — `seed_work_orders.py` attaches work orders to
 existing machines and exits with an error if there are none.
+
+Both take arguments now (`--count`, `--approved`, `--reserve-overdue`, …); run
+either with `--help` for the list.
+
+**Between demo runs, prefer the reset page** at `/demo-reset`, reached from the
+sidebar copyright. It does both steps in one transaction and lets you set the
+notification addresses and per-status counts without a shell. It needs
+`DEMO_RESET_TOKEN` set in the backend environment — see Step 5 — and
+answers 503 until it is. To keep the endpoint inert on this deployment
+altogether, set `DEMO_RESET_ENABLED=False`.
 
 ---
 

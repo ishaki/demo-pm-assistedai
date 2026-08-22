@@ -240,16 +240,17 @@ docker-compose exec backend python -m app.scripts.seed_data
 
 The seed script generates **75 test machines** with the following distribution:
 
-| Status      | Count | Percentage | Description              |
-|-------------|-------|------------|--------------------------|
-| **Overdue** | 15    | 20%        | Next PM date in the past |
-| **Due Soon**| 25    | 33%        | Next PM within 30 days   |
-| **OK**      | 35    | 47%        | Next PM > 30 days away   |
+| Status      | Count | Share | Description              |
+|-------------|-------|-------|--------------------------|
+| **Overdue** | 15    | 20%   | Next PM date in the past |
+| **Due Soon**| 24    | 33%   | Next PM within 30 days   |
+| **OK**      | 36    | rest  | Next PM > 30 days away   |
 
-PM Frequency Distribution:
-- Monthly: 30 machines
-- Bimonthly: 25 machines
-- Yearly: 20 machines
+Both shares are truncated, so 75 machines gives 15 / 24 / 36. Change the count
+on the [demo reset page](#demo-reset-page) and the same proportions apply.
+
+PM frequency (Monthly / Bimonthly / Yearly) is drawn at random per machine, so
+the split varies between runs.
 
 Additional test data:
 - 5 locations (Zone A through Zone E)
@@ -543,6 +544,80 @@ docker-compose exec backend python -m app.scripts.init_db
 docker-compose exec backend python -m app.scripts.seed_data
 ```
 
+### Demo Reset Page
+
+For resetting between demo runs there is a page at **`/demo-reset`**, reached by
+clicking the copyright line at the bottom of the sidebar. It opens in its own
+tab and renders with no navigation, so a tab left open during a demo does not
+look like part of the application.
+
+It lets you set, without touching a config file or a SQL script:
+
+- **Admin email** — receives the work order approval notice
+- **Supplier email** — receives the supplier notification
+- **Machines**, and how many of the most-overdue ones to leave *without* a work
+  order (see below)
+- **How many work orders** in each of Draft, Pending Approval, Approved,
+  Completed and Cancelled
+
+It reports what it produced afterwards, including the dashboard's own PM status
+breakdown, so you can see the reset landed before starting the demo.
+
+**Why "overdue machines held back" matters.** Open work orders are handed out
+overdue-first. Leave this at 0 and every overdue machine ends up with one, the
+dashboard shows Overdue = 0, and a live "AI raises a work order" demo has no
+machine to act on — the create endpoint answers HTTP 409 for any machine that
+already has an open order. The default of 5 keeps a few in reserve.
+
+**Access.** The endpoint deletes every row in five tables, and there is no other
+authentication in this application, so three gates guard it — all in
+`backend/app/routers/admin.py`:
+
+| Condition | Response |
+|---|---|
+| `DEMO_RESET_ENABLED=False` | `403` — endpoint inert |
+| Enabled but `DEMO_RESET_TOKEN` blank | `503` — refuses rather than standing open |
+| Token missing or wrong | `401` |
+
+Set both in the backend environment:
+
+```bash
+DEMO_RESET_ENABLED=True
+DEMO_RESET_TOKEN=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+DEMO_ADMIN_EMAIL=you@example.com
+DEMO_SUPPLIER_EMAIL=supplier@example.com
+```
+
+The page asks for the token once and keeps it in `sessionStorage` for the tab;
+the form values are remembered in `localStorage`, so the next reset prefills
+with what you used last.
+
+A reset runs as one transaction — a failure part way through changes nothing —
+and clears `workflow_logs` as well, so no n8n run history carries over from an
+earlier rehearsal. It creates no schema: the tables must already exist.
+
+### Reseeding from the command line
+
+The same generators are available as scripts, and now take arguments:
+
+```bash
+# Machines and their maintenance history
+docker-compose exec backend python scripts/seed_data.py --count 75 --yes
+
+# Work orders and the AI decisions behind them
+docker-compose exec backend python scripts/seed_work_orders.py \
+    --pending-approval 15 --approved 12 --completed 14 --cancelled 4 \
+    --reserve-overdue 5
+```
+
+Both share `backend/app/services/demo_seed_service.py` with the reset page, so
+the command line and the page cannot drift apart. Unlike the page, they leave
+`workflow_logs` alone.
+
+`backend/scripts/reset_and_seed.sql` is a third, deliberately independent
+implementation in T-SQL, for running from SSMS when there is no Python or
+backend to hand.
+
 ## Development
 
 ### Running Backend Locally
@@ -606,7 +681,9 @@ AIHarvest_WODemo/
 │   │   │   └── main.py              # FastAPI app
 │   │   ├── scripts/
 │   │   │   ├── init_db.py           # Database initialization
-│   │   │   └── seed_data.py         # Test data generation
+│   │   │   ├── seed_data.py         # Machines + maintenance history
+│   │   │   ├── seed_work_orders.py  # Work orders + AI decisions
+│   │   │   └── reset_and_seed.sql   # Standalone T-SQL reset (SSMS)
 │   │   ├── Dockerfile
 │   │   ├── requirements.txt
 │   │   └── .env.example
@@ -616,7 +693,8 @@ AIHarvest_WODemo/
 │   │   │   ├── pages/               # Page components
 │   │   │   │   ├── MachineDashboard.jsx
 │   │   │   │   ├── MachineDetail.jsx
-│   │   │   │   └── WorkOrderView.jsx
+│   │   │   │   ├── WorkOrderView.jsx
+│   │   │   │   └── DemoReset.jsx    # Demo reset (outside Layout)
 │   │   │   ├── services/            # API client layer
 │   │   │   ├── hooks/               # Custom React hooks
 │   │   │   ├── utils/               # Utility functions

@@ -94,10 +94,23 @@ const Layout = ({ children }) => {
         </nav>
 
         {/* Footer info. The descriptor is already in the lockup above, so this
-            stays short rather than repeating the full name. */}
+            stays short rather than repeating the full name.
+
+            The copyright doubles as the way in to the demo reset page. It is
+            styled exactly as it reads -- no underline, no icon, no hover colour
+            -- because an audience watching a demo should have no reason to
+            notice it. Opens in its own tab so the demo keeps its place. */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-line">
           <p className="text-xs text-content-subtle text-center">
-            &copy; {new Date().getFullYear()} {APP_NAME}
+            <a
+              href="/demo-reset"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Demo database reset"
+              className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+            >
+              &copy; {new Date().getFullYear()} {APP_NAME}
+            </a>
           </p>
         </div>
       </aside>

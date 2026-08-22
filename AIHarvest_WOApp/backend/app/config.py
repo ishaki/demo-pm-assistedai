@@ -51,6 +51,27 @@ class Settings(BaseSettings):
     # API Configuration
     API_V1_PREFIX: str = "/api/v1"
 
+    # Demo reset -- the page at /demo-reset, reached from the sidebar copyright.
+    #
+    # The endpoint behind it DELETES every machine, work order, AI decision,
+    # maintenance record and workflow log, then reseeds. Three gates, all in
+    # routers/admin.py:
+    #   DEMO_RESET_ENABLED=False  -> 403, the endpoint is inert
+    #   DEMO_RESET_TOKEN empty    -> 503, rather than silently open
+    #   wrong or missing token    -> 401
+    #
+    # Set the token to something only the person running the demo knows. There
+    # is no other authentication anywhere in this application, so this one
+    # value is all that stands between a public URL and an empty database.
+    DEMO_RESET_ENABLED: bool = True
+    DEMO_RESET_TOKEN: Optional[str] = ""
+
+    # Defaults the reset page prefills. DEMO_ADMIN_EMAIL receives the work order
+    # approval notice, DEMO_SUPPLIER_EMAIL the supplier notification; a reset
+    # writes them to every seeded machine's admin_email / supplier_email.
+    DEMO_ADMIN_EMAIL: str = "ishak.ahmad@innoark.com"
+    DEMO_SUPPLIER_EMAIL: str = "natalia4nib@gmail.com"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

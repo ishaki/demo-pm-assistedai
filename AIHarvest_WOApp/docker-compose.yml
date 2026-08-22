@@ -24,6 +24,10 @@ services:
       - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
       - SMTP_USE_TLS=${SMTP_USE_TLS:-True}
       - DEBUG=${DEBUG:-True}
+      - DEMO_RESET_ENABLED=${DEMO_RESET_ENABLED:-True}
+      - DEMO_RESET_TOKEN=${DEMO_RESET_TOKEN}
+      - DEMO_ADMIN_EMAIL=${DEMO_ADMIN_EMAIL:-ishak.ahmad@innoark.com}
+      - DEMO_SUPPLIER_EMAIL=${DEMO_SUPPLIER_EMAIL:-natalia4nib@gmail.com}
     volumes:
       - ./backend:/app
     networks:

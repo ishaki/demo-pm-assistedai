@@ -78,13 +78,36 @@ async def add_process_time_header(request: Request, call_next):
 
 
 # Exception handlers
+def _serialisable_errors(exc: RequestValidationError) -> list:
+    """
+    Make exc.errors() safe to put in a JSONResponse.
+
+    A field constraint (ge, le, max_length) produces a ctx of plain numbers and
+    serialises fine. A @model_validator that raises ValueError does not: pydantic
+    v2 puts the exception *object* in ctx['error'], and JSONResponse cannot
+    encode it -- the response blows up while being written, so the caller gets a
+    500 from the catch-all below instead of the 422 with the message that was
+    already sitting in err['msg'].
+
+    Stringifying ctx keeps the detail without the object.
+    """
+    errors = []
+    for err in exc.errors():
+        err = dict(err)
+        ctx = err.get("ctx")
+        if ctx:
+            err["ctx"] = {key: str(value) for key, value in ctx.items()}
+        errors.append(err)
+    return errors
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.error(f"Validation error: {exc}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "detail": exc.errors(),
+            "detail": _serialisable_errors(exc),
             "message": "Validation error occurred"
         },
     )
@@ -179,10 +202,11 @@ async def root():
 
 
 # Import and register routers
-from .routers import machines, work_orders, ai, workflow_logs, workflow_webhooks
+from .routers import machines, work_orders, ai, workflow_logs, workflow_webhooks, admin
 
 app.include_router(machines.router, prefix=f"{settings.API_V1_PREFIX}/machines", tags=["Machines"])
 app.include_router(work_orders.router, prefix=f"{settings.API_V1_PREFIX}/work-orders", tags=["Work Orders"])
 app.include_router(ai.router, prefix=f"{settings.API_V1_PREFIX}/ai", tags=["AI"])
 app.include_router(workflow_logs.router, prefix=f"{settings.API_V1_PREFIX}/workflow-logs", tags=["Workflow Logs"])
 app.include_router(workflow_webhooks.router, prefix=f"{settings.API_V1_PREFIX}/workflows", tags=["Workflow Webhooks"])
+app.include_router(admin.router, prefix=f"{settings.API_V1_PREFIX}/admin", tags=["Admin"])

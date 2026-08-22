@@ -316,6 +316,10 @@ want SMTP_FROM_EMAIL       SMTP_FROM_EMAIL       "$BACKEND"
 want SMTP_USE_TLS          SMTP_USE_TLS          "$BACKEND"
 want DEBUG                 DEBUG                 "$BACKEND"
 want CORS_ORIGINS          CORS_ORIGINS          "$BACKEND"
+want DEMO_RESET_ENABLED    DEMO_RESET_ENABLED    "$BACKEND"
+want DEMO_RESET_TOKEN      DEMO_RESET_TOKEN      "$BACKEND"
+want DEMO_ADMIN_EMAIL      DEMO_ADMIN_EMAIL      "$BACKEND"
+want DEMO_SUPPLIER_EMAIL   DEMO_SUPPLIER_EMAIL   "$BACKEND"
 
 # --------------------------------------------------------------------------
 # Frontend: REACT_APP_API_URL
@@ -618,6 +622,22 @@ put "# ==========================="
 put "# CORS CONFIGURATION"
 put "# ==========================="
 emit CORS_ORIGINS
+blank
+
+put "# ==========================="
+put "# DEMO RESET PAGE"
+put "# ==========================="
+put "# Backs /demo-reset, reached from the sidebar copyright. The endpoint"
+put "# DELETES every machine, work order, AI decision, maintenance record"
+put "# and workflow log, then reseeds."
+put "#"
+put "# DEMO_RESET_ENABLED=False makes it inert (403). Left enabled, a blank"
+put "# DEMO_RESET_TOKEN makes it refuse every request (503) rather than"
+put "# stand open -- this token is the only authentication in the app."
+emit DEMO_RESET_ENABLED
+emit DEMO_RESET_TOKEN
+emit DEMO_ADMIN_EMAIL
+emit DEMO_SUPPLIER_EMAIL
 blank
 
 put "# ==========================="
